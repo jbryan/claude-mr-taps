@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#1a1a2e"/>
+  <g fill="#4a90d9">
+    <!-- Metronome body -->
+    <path d="M256 80 L340 400 L172 400 Z" fill="#16213e" stroke="#4a90d9" stroke-width="8"/>
+    <!-- Pendulum -->
+    <line x1="256" y1="120" x2="320" y2="200" stroke="#e94560" stroke-width="12" stroke-linecap="round"/>
+    <circle cx="320" cy="200" r="20" fill="#e94560"/>
+    <!-- Base -->
+    <rect x="152" y="380" width="208" height="40" rx="8" fill="#4a90d9"/>
+    <!-- Scale marks -->
+    <rect x="220" y="160" width="72" height="4" rx="2" fill="#4a90d9" opacity="0.5"/>
+    <rect x="210" y="200" width="92" height="4" rx="2" fill="#4a90d9" opacity="0.5"/>
+    <rect x="200" y="240" width="112" height="4" rx="2" fill="#4a90d9" opacity="0.5"/>
+    <rect x="190" y="280" width="132" height="4" rx="2" fill="#4a90d9" opacity="0.5"/>
+    <rect x="180" y="320" width="152" height="4" rx="2" fill="#4a90d9" opacity="0.5"/>
+  </g>
+</svg>

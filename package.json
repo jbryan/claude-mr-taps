@@ -1,0 +1,24 @@
+{
+  "name": "mr-taps",
+  "version": "1.0.0",
+  "description": "A PWA metronome application",
+  "main": "src/js/metronome.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "start": "npx serve public",
+    "generate-icons": "node scripts/generate-icons.js"
+  },
+  "keywords": [
+    "metronome",
+    "pwa",
+    "music"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "canvas": "^2.11.2",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  }
+}

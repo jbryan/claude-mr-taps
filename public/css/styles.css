@@ -1,0 +1,252 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary-color: #4a90d9;
+  --accent-color: #e94560;
+  --bg-color: #1a1a2e;
+  --surface-color: #16213e;
+  --text-color: #eee;
+  --text-muted: #888;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.app {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+header {
+  text-align: center;
+}
+
+header h1 {
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: 2px;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.tempo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.tempo-display {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+#bpm-value {
+  font-size: 4rem;
+  font-weight: 200;
+  line-height: 1;
+}
+
+.bpm-label {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.tempo-slider {
+  width: 100%;
+  height: 40px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.tempo-slider::-webkit-slider-track {
+  height: 8px;
+  background: var(--surface-color);
+  border-radius: 4px;
+}
+
+.tempo-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  margin-top: -8px;
+}
+
+.tempo-slider::-moz-range-track {
+  height: 8px;
+  background: var(--surface-color);
+  border-radius: 4px;
+}
+
+.tempo-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  border: none;
+}
+
+.tempo-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.btn {
+  background: var(--surface-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn:hover {
+  background: var(--primary-color);
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn-small {
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+}
+
+.beat-display {
+  padding: 20px;
+  background: var(--surface-color);
+  border-radius: 12px;
+}
+
+.beat-indicators {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.beat-indicator {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--bg-color);
+  transition: background-color 0.1s, transform 0.1s;
+}
+
+.beat-indicator.active {
+  background: var(--primary-color);
+  transform: scale(1.2);
+}
+
+.beat-indicator.accent {
+  background: var(--accent-color);
+}
+
+.controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.control-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.control-group label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.control-group select {
+  padding: 10px 15px;
+  background: var(--surface-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.control-group select:focus {
+  outline: 2px solid var(--primary-color);
+}
+
+.play-section {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-play {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-play.playing {
+  background: var(--accent-color);
+}
+
+.hidden {
+  display: none;
+}
+
+footer {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 400px) {
+  .app {
+    padding: 15px;
+  }
+
+  #bpm-value {
+    font-size: 3rem;
+  }
+
+  .beat-indicator {
+    width: 24px;
+    height: 24px;
+  }
+}
