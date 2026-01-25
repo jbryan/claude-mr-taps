@@ -19,12 +19,11 @@ no internet connection.
 metronome/
 ├── package.json           # Project configuration and scripts
 ├── jest.config.js         # Jest test configuration
-├── src/
-│   └── js/
-│       └── metronome.js   # Core Metronome class (source for testing)
 ├── tests/
 │   ├── setup.js           # Web Audio API mocks for testing
 │   └── metronome.test.js  # Test suite
+├── scripts/
+│   └── generate-icons.js  # Script to generate PWA icons
 └── public/
     ├── index.html         # Main HTML page
     ├── manifest.json      # PWA manifest
@@ -32,7 +31,7 @@ metronome/
     ├── css/
     │   └── styles.css     # Application styles
     ├── js/
-    │   ├── metronome.js   # Core Metronome class (browser version)
+    │   ├── metronome.js   # Core Metronome class
     │   └── app.js         # UI logic and event handling
     └── icons/
         ├── icon-192.png   # PWA icon (192x192)

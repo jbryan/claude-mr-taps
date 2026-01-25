@@ -93,19 +93,30 @@ export class Metronome {
 
     oscillator.type = 'sine';
 
+    // Set frequency and initial gain based on beat type
     // 440Hz for accents, 880Hz for regular beats, 660Hz for subdivisions
+    let initialGain;
     if (isAccent) {
       oscillator.frequency.setValueAtTime(440, time);
-      gainNode.gain.setValueAtTime(1.0, time);
+      initialGain = 1.0;
     } else if (isSubdivision) {
       oscillator.frequency.setValueAtTime(660, time);
-      gainNode.gain.setValueAtTime(0.3, time);
+      initialGain = 0.3;
     } else {
       oscillator.frequency.setValueAtTime(880, time);
-      gainNode.gain.setValueAtTime(0.7, time);
+      initialGain = 0.7;
     }
 
-    const duration = 0.05; // 50ms beep
+    // Percussive envelope with quick attack and exponential decay
+    const attackTime = 0.005; // 5ms attack
+    const decayTime = 0.08; // 80ms decay
+    const duration = attackTime + decayTime;
+
+    // Start at 0, quick attack to peak, then exponential decay
+    gainNode.gain.setValueAtTime(0.001, time);
+    gainNode.gain.exponentialRampToValueAtTime(initialGain, time + attackTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
     oscillator.start(time);
     oscillator.stop(time + duration);
   }

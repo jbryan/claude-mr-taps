@@ -1,4 +1,4 @@
-import { Metronome } from '../src/js/metronome.js';
+import { Metronome } from '../public/js/metronome.js';
 
 describe('Metronome', () => {
   let metronome;

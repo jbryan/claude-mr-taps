@@ -21,7 +21,12 @@ class MockAudioContext {
 
   createGain() {
     return {
-      gain: { setValueAtTime: jest.fn(), value: 1 },
+      gain: {
+        setValueAtTime: jest.fn(),
+        exponentialRampToValueAtTime: jest.fn(),
+        linearRampToValueAtTime: jest.fn(),
+        value: 1,
+      },
       connect: jest.fn(),
       disconnect: jest.fn(),
     };

@@ -1,8 +1,8 @@
 {
   "name": "mr-taps",
-  "version": "1.0.0",
+  "version": "2026.01.25-2",
   "description": "A PWA metronome application",
-  "main": "src/js/metronome.js",
+  "main": "public/js/metronome.js",
   "type": "module",
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
