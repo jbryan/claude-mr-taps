@@ -2,6 +2,15 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.01.25-3] - 2026-01-25
+
+### Added
+- Favicon (32x32) to eliminate browser 404 errors
+- Favicon generation added to `scripts/generate-icons.js`
+
+### Changed
+- Bumped service worker cache version to v2
+
 ## [2026.01.25-2] - 2026-01-25
 
 ### Changed

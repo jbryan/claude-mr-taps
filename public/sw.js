@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mr-taps-v1';
+const CACHE_NAME = 'mr-taps-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const ASSETS_TO_CACHE = [
   './js/app.js',
   './js/metronome.js',
   './manifest.json',
+  './favicon.png',
   './icons/icon-192.png',
   './icons/icon-512.png',
 ];

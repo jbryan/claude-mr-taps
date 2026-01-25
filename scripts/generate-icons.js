@@ -68,9 +68,51 @@ function generateIcon(size) {
   return canvas.toBuffer('image/png');
 }
 
-// Generate icons
+function generateFavicon(size) {
+  const canvas = createCanvas(size, size);
+  const ctx = canvas.getContext('2d');
+  const scale = size / 32;
+
+  // Background
+  ctx.fillStyle = '#1a1a2e';
+  ctx.beginPath();
+  ctx.roundRect(0, 0, size, size, 4 * scale);
+  ctx.fill();
+
+  // Simplified metronome triangle
+  ctx.fillStyle = '#16213e';
+  ctx.strokeStyle = '#4a90d9';
+  ctx.lineWidth = 2 * scale;
+  ctx.beginPath();
+  ctx.moveTo(16 * scale, 4 * scale);
+  ctx.lineTo(26 * scale, 28 * scale);
+  ctx.lineTo(6 * scale, 28 * scale);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Pendulum
+  ctx.strokeStyle = '#e94560';
+  ctx.lineWidth = 2 * scale;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(16 * scale, 8 * scale);
+  ctx.lineTo(22 * scale, 14 * scale);
+  ctx.stroke();
+
+  // Pendulum weight
+  ctx.fillStyle = '#e94560';
+  ctx.beginPath();
+  ctx.arc(22 * scale, 14 * scale, 3 * scale, 0, Math.PI * 2);
+  ctx.fill();
+
+  return canvas.toBuffer('image/png');
+}
+
+// Generate PWA icons
 const sizes = [192, 512];
 const iconsDir = join(__dirname, '..', 'public', 'icons');
+const publicDir = join(__dirname, '..', 'public');
 
 sizes.forEach(size => {
   const buffer = generateIcon(size);
@@ -78,5 +120,11 @@ sizes.forEach(size => {
   writeFileSync(filename, buffer);
   console.log(`Generated ${filename}`);
 });
+
+// Generate favicon
+const faviconBuffer = generateFavicon(32);
+const faviconPath = join(publicDir, 'favicon.png');
+writeFileSync(faviconPath, faviconBuffer);
+console.log(`Generated ${faviconPath}`);
 
 console.log('Icons generated successfully!');
