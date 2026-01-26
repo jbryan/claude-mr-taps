@@ -2,6 +2,16 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.01.26-1] - 2026-01-26
+
+### Added
+- ±5 BPM buttons for faster tempo adjustments
+- Compound time signature support with secondary beats (e.g., 7/4 as 3+4)
+- Visual separator between primary and secondary beat indicators
+
+### Fixed
+- Beat indicators now correctly reset when disabling secondary beats mid-measure
+
 ## [2026.01.25-4] - 2026-01-25
 
 ### Added

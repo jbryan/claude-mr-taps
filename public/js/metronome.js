@@ -23,10 +23,12 @@ export class Metronome {
     this.audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
     this.bpm = 120;
     this.beatsPerMeasure = 4;
+    this.secondaryBeatsPerMeasure = null; // null = disabled, 1-20 = enabled
     this.subdivision = Metronome.SUBDIVISIONS.NONE;
     this.isPlaying = false;
     this.currentBeat = 0;
     this.currentSubdivision = 0;
+    this.currentMeasure = 0; // 0 = primary, 1 = secondary
     this.nextNoteTime = 0;
     this.schedulerTimerId = null;
     this.scheduleAheadTime = 0.1; // seconds
@@ -71,6 +73,36 @@ export class Metronome {
       throw new RangeError(`Beats per measure must be between ${Metronome.MIN_BEATS} and ${Metronome.MAX_BEATS}`);
     }
     this.beatsPerMeasure = numBeats;
+  }
+
+  /**
+   * Set the secondary beats per measure (for compound time signatures)
+   * @param {number|null} beats - Number of beats (1-20) or null to disable
+   */
+  setSecondaryBeatsPerMeasure(beats) {
+    if (beats === null || beats === 0) {
+      this.secondaryBeatsPerMeasure = null;
+      // Reset to primary measure to avoid beat indicator mismatch
+      this.currentMeasure = 0;
+      this.currentBeat = 0;
+      return;
+    }
+    const numBeats = Math.round(beats);
+    if (numBeats < Metronome.MIN_BEATS || numBeats > Metronome.MAX_BEATS) {
+      throw new RangeError(`Secondary beats per measure must be between ${Metronome.MIN_BEATS} and ${Metronome.MAX_BEATS}`);
+    }
+    this.secondaryBeatsPerMeasure = numBeats;
+  }
+
+  /**
+   * Get the current active beats per measure based on which measure we're in
+   * @returns {number} The beats for the current measure
+   */
+  get currentBeatsPerMeasure() {
+    if (this.secondaryBeatsPerMeasure === null) {
+      return this.beatsPerMeasure;
+    }
+    return this.currentMeasure === 0 ? this.beatsPerMeasure : this.secondaryBeatsPerMeasure;
   }
 
   /**
@@ -163,6 +195,7 @@ export class Metronome {
         beat: this.currentBeat,
         subdivision: this.currentSubdivision,
         isAccent: isFirstBeat && isMainBeat,
+        measure: this.currentMeasure,
       });
     }
 
@@ -171,8 +204,12 @@ export class Metronome {
     if (this.currentSubdivision >= this.subdivision) {
       this.currentSubdivision = 0;
       this.currentBeat++;
-      if (this.currentBeat >= this.beatsPerMeasure) {
+      if (this.currentBeat >= this.currentBeatsPerMeasure) {
         this.currentBeat = 0;
+        // Alternate measures if secondary is set
+        if (this.secondaryBeatsPerMeasure !== null) {
+          this.currentMeasure = this.currentMeasure === 0 ? 1 : 0;
+        }
       }
     }
 
@@ -202,6 +239,7 @@ export class Metronome {
     this.isPlaying = true;
     this.currentBeat = 0;
     this.currentSubdivision = 0;
+    this.currentMeasure = 0;
     this.nextNoteTime = this.audioContext.currentTime;
     this.scheduler();
   }

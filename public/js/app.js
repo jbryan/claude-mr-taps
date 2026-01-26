@@ -8,7 +8,10 @@ const bpmValue = document.getElementById('bpm-value');
 const tempoSlider = document.getElementById('tempo-slider');
 const tempoDown = document.getElementById('tempo-down');
 const tempoUp = document.getElementById('tempo-up');
+const tempoDown5 = document.getElementById('tempo-down-5');
+const tempoUp5 = document.getElementById('tempo-up-5');
 const beatsSelect = document.getElementById('beats-select');
+const secondaryBeatsSelect = document.getElementById('secondary-beats-select');
 const subdivisionSelect = document.getElementById('subdivision-select');
 const playBtn = document.getElementById('play-btn');
 const beatIndicators = document.getElementById('beat-indicators');
@@ -48,6 +51,7 @@ function saveSettings() {
   const settings = {
     bpm: metronome.bpm,
     beatsPerMeasure: metronome.beatsPerMeasure,
+    secondaryBeatsPerMeasure: metronome.secondaryBeatsPerMeasure,
     subdivision: metronome.subdivision,
     soundSettings: metronome.soundSettings,
   };
@@ -70,6 +74,9 @@ function loadSettings() {
       }
       if (settings.beatsPerMeasure) {
         metronome.setBeatsPerMeasure(settings.beatsPerMeasure);
+      }
+      if (settings.secondaryBeatsPerMeasure !== undefined) {
+        metronome.setSecondaryBeatsPerMeasure(settings.secondaryBeatsPerMeasure);
       }
       if (settings.subdivision) {
         metronome.setSubdivision(settings.subdivision);
@@ -102,10 +109,19 @@ function initUI() {
     beatsSelect.appendChild(option);
   }
 
+  // Populate secondary beats select (1-20, 0 = None already in HTML)
+  for (let i = 1; i <= 20; i++) {
+    const option = document.createElement('option');
+    option.value = i;
+    option.textContent = i;
+    secondaryBeatsSelect.appendChild(option);
+  }
+
   // Set UI to match metronome state
   bpmValue.textContent = metronome.bpm;
   tempoSlider.value = metronome.bpm;
   beatsSelect.value = metronome.beatsPerMeasure;
+  secondaryBeatsSelect.value = metronome.secondaryBeatsPerMeasure || 0;
   subdivisionSelect.value = metronome.subdivision;
 
   // Create beat indicators
@@ -115,11 +131,30 @@ function initUI() {
 // Update beat indicators based on beats per measure
 function updateBeatIndicators() {
   beatIndicators.innerHTML = '';
+
+  // Primary measure indicators
   for (let i = 0; i < metronome.beatsPerMeasure; i++) {
     const indicator = document.createElement('div');
     indicator.className = 'beat-indicator';
     indicator.dataset.beat = i;
+    indicator.dataset.measure = 0;
     beatIndicators.appendChild(indicator);
+  }
+
+  // Secondary measure indicators (if set)
+  if (metronome.secondaryBeatsPerMeasure !== null) {
+    // Add separator
+    const separator = document.createElement('div');
+    separator.className = 'beat-separator';
+    beatIndicators.appendChild(separator);
+
+    for (let i = 0; i < metronome.secondaryBeatsPerMeasure; i++) {
+      const indicator = document.createElement('div');
+      indicator.className = 'beat-indicator';
+      indicator.dataset.beat = i;
+      indicator.dataset.measure = 1;
+      beatIndicators.appendChild(indicator);
+    }
   }
 }
 
@@ -132,9 +167,15 @@ function updateBpmDisplay() {
 // Highlight active beat indicator
 function highlightBeat(beatInfo) {
   const indicators = beatIndicators.querySelectorAll('.beat-indicator');
-  indicators.forEach((indicator, index) => {
+  indicators.forEach((indicator) => {
     indicator.classList.remove('active', 'accent');
-    if (index === beatInfo.beat && beatInfo.subdivision === 0) {
+    const indicatorBeat = parseInt(indicator.dataset.beat, 10);
+    const indicatorMeasure = parseInt(indicator.dataset.measure, 10);
+    if (
+      indicatorBeat === beatInfo.beat &&
+      indicatorMeasure === beatInfo.measure &&
+      beatInfo.subdivision === 0
+    ) {
       indicator.classList.add('active');
       if (beatInfo.isAccent) {
         indicator.classList.add('accent');
@@ -182,9 +223,30 @@ tempoUp.addEventListener('click', () => {
   }
 });
 
+tempoDown5.addEventListener('click', () => {
+  const newBpm = Math.max(Metronome.MIN_BPM, metronome.bpm - 5);
+  metronome.setTempo(newBpm);
+  updateBpmDisplay();
+  saveSettings();
+});
+
+tempoUp5.addEventListener('click', () => {
+  const newBpm = Math.min(Metronome.MAX_BPM, metronome.bpm + 5);
+  metronome.setTempo(newBpm);
+  updateBpmDisplay();
+  saveSettings();
+});
+
 beatsSelect.addEventListener('change', (e) => {
   const beats = parseInt(e.target.value, 10);
   metronome.setBeatsPerMeasure(beats);
+  updateBeatIndicators();
+  saveSettings();
+});
+
+secondaryBeatsSelect.addEventListener('change', (e) => {
+  const beats = parseInt(e.target.value, 10);
+  metronome.setSecondaryBeatsPerMeasure(beats === 0 ? null : beats);
   updateBeatIndicators();
   saveSettings();
 });

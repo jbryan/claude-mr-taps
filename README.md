@@ -6,8 +6,9 @@ no internet connection.
 
 ## Features
 
-- **Tempo Control**: Supports tempos from 1 BPM up to 300 BPM
+- **Tempo Control**: Supports tempos from 1 BPM up to 300 BPM with ±1 and ±5 buttons
 - **Time Signature**: Set the number of beats in a measure from 1 to 20
+- **Compound Time**: Optional secondary beats for asymmetric meters (e.g., 7/4 as 3+4)
 - **Subdivisions**: Beats can be subdivided into 8ths, 16ths, and triplets
 - **Audio**: Uses Web Audio API to generate precise 440Hz beeps
 - **Offline Support**: Works without an internet connection once installed
@@ -83,7 +84,9 @@ The test suite includes 37 tests covering:
 
 - **Tempo Slider**: Drag to adjust BPM (1-300)
 - **+/- Buttons**: Fine-tune tempo by 1 BPM
-- **Beats per Measure**: Select 1-20 beats
+- **±5 Buttons**: Adjust tempo by 5 BPM
+- **Primary Beats**: Select 1-20 beats per measure
+- **Secondary Beats**: Optional second measure for compound time (None, or 1-20)
 - **Subdivision**: Choose None, Eighth Notes, Sixteenth Notes, or Triplets
 - **Play/Stop Button**: Start or stop the metronome
 - **Spacebar**: Keyboard shortcut to toggle play/stop

@@ -193,6 +193,13 @@ main {
   background: var(--accent-color);
 }
 
+.beat-separator {
+  width: 2px;
+  height: 30px;
+  background: var(--text-muted);
+  margin: 0 5px;
+}
+
 .controls-section {
   display: flex;
   flex-direction: column;
