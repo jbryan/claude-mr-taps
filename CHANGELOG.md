@@ -2,6 +2,20 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.01.25-4] - 2026-01-25
+
+### Added
+- Settings dialog (gear icon) with configurable sound parameters:
+  - Pitch (100-2000 Hz) for each beat type
+  - Decay time (10-500 ms) for each beat type
+  - Waveform (sine, square, triangle, sawtooth) for each beat type
+- localStorage persistence for all settings (tempo, beats, subdivision, sound settings)
+- "Reset to Defaults" button in settings dialog
+- 10 new tests for sound settings (47 total)
+
+### Changed
+- Bumped service worker cache version to v3
+
 ## [2026.01.25-3] - 2026-01-25
 
 ### Added

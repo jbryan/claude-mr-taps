@@ -12,6 +12,12 @@ export class Metronome {
     SIXTEENTH: 4,
     TRIPLET: 3,
   };
+  static WAVEFORMS = ['sine', 'square', 'triangle', 'sawtooth'];
+  static DEFAULT_SOUND_SETTINGS = {
+    accent: { pitch: 440, decay: 0.08, waveform: 'sine', gain: 1.0 },
+    regular: { pitch: 880, decay: 0.08, waveform: 'sine', gain: 0.7 },
+    subdivision: { pitch: 660, decay: 0.08, waveform: 'sine', gain: 0.3 },
+  };
 
   constructor(audioContext = null) {
     this.audioContext = audioContext || new (window.AudioContext || window.webkitAudioContext)();
@@ -26,6 +32,7 @@ export class Metronome {
     this.scheduleAheadTime = 0.1; // seconds
     this.lookahead = 25; // milliseconds
     this.onBeat = null; // callback for UI updates
+    this.soundSettings = JSON.parse(JSON.stringify(Metronome.DEFAULT_SOUND_SETTINGS));
   }
 
   /**
@@ -91,34 +98,50 @@ export class Metronome {
     oscillator.connect(gainNode);
     gainNode.connect(this.audioContext.destination);
 
-    oscillator.type = 'sine';
-
-    // Set frequency and initial gain based on beat type
-    // 440Hz for accents, 880Hz for regular beats, 660Hz for subdivisions
-    let initialGain;
+    // Get settings based on beat type
+    let settings;
     if (isAccent) {
-      oscillator.frequency.setValueAtTime(440, time);
-      initialGain = 1.0;
+      settings = this.soundSettings.accent;
     } else if (isSubdivision) {
-      oscillator.frequency.setValueAtTime(660, time);
-      initialGain = 0.3;
+      settings = this.soundSettings.subdivision;
     } else {
-      oscillator.frequency.setValueAtTime(880, time);
-      initialGain = 0.7;
+      settings = this.soundSettings.regular;
     }
 
-    // Percussive envelope with quick attack and exponential decay
+    oscillator.type = settings.waveform;
+    oscillator.frequency.setValueAtTime(settings.pitch, time);
+
+    // Percussive envelope with quick attack and configurable decay
     const attackTime = 0.005; // 5ms attack
-    const decayTime = 0.08; // 80ms decay
+    const decayTime = settings.decay;
     const duration = attackTime + decayTime;
 
     // Start at 0, quick attack to peak, then exponential decay
     gainNode.gain.setValueAtTime(0.001, time);
-    gainNode.gain.exponentialRampToValueAtTime(initialGain, time + attackTime);
+    gainNode.gain.exponentialRampToValueAtTime(settings.gain, time + attackTime);
     gainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
 
     oscillator.start(time);
     oscillator.stop(time + duration);
+  }
+
+  /**
+   * Update sound settings for a beat type
+   * @param {string} beatType - 'accent', 'regular', or 'subdivision'
+   * @param {object} settings - Object with pitch, decay, waveform, and/or gain
+   */
+  setSoundSettings(beatType, settings) {
+    if (!this.soundSettings[beatType]) {
+      throw new RangeError(`Invalid beat type: ${beatType}`);
+    }
+    Object.assign(this.soundSettings[beatType], settings);
+  }
+
+  /**
+   * Reset sound settings to defaults
+   */
+  resetSoundSettings() {
+    this.soundSettings = JSON.parse(JSON.stringify(Metronome.DEFAULT_SOUND_SETTINGS));
   }
 
   /**

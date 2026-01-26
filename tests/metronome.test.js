@@ -262,5 +262,66 @@ describe('Metronome', () => {
       expect(Metronome.SUBDIVISIONS.SIXTEENTH).toBe(4);
       expect(Metronome.SUBDIVISIONS.TRIPLET).toBe(3);
     });
+
+    test('WAVEFORMS has correct values', () => {
+      expect(Metronome.WAVEFORMS).toContain('sine');
+      expect(Metronome.WAVEFORMS).toContain('square');
+      expect(Metronome.WAVEFORMS).toContain('triangle');
+      expect(Metronome.WAVEFORMS).toContain('sawtooth');
+    });
+
+    test('DEFAULT_SOUND_SETTINGS has all beat types', () => {
+      expect(Metronome.DEFAULT_SOUND_SETTINGS).toHaveProperty('accent');
+      expect(Metronome.DEFAULT_SOUND_SETTINGS).toHaveProperty('regular');
+      expect(Metronome.DEFAULT_SOUND_SETTINGS).toHaveProperty('subdivision');
+    });
+  });
+
+  describe('soundSettings', () => {
+    test('initializes with default sound settings', () => {
+      expect(metronome.soundSettings.accent.pitch).toBe(440);
+      expect(metronome.soundSettings.regular.pitch).toBe(880);
+      expect(metronome.soundSettings.subdivision.pitch).toBe(660);
+    });
+
+    test('setSoundSettings updates pitch', () => {
+      metronome.setSoundSettings('accent', { pitch: 500 });
+      expect(metronome.soundSettings.accent.pitch).toBe(500);
+    });
+
+    test('setSoundSettings updates decay', () => {
+      metronome.setSoundSettings('regular', { decay: 0.1 });
+      expect(metronome.soundSettings.regular.decay).toBe(0.1);
+    });
+
+    test('setSoundSettings updates waveform', () => {
+      metronome.setSoundSettings('subdivision', { waveform: 'square' });
+      expect(metronome.soundSettings.subdivision.waveform).toBe('square');
+    });
+
+    test('setSoundSettings updates multiple properties', () => {
+      metronome.setSoundSettings('accent', { pitch: 600, decay: 0.15, waveform: 'triangle' });
+      expect(metronome.soundSettings.accent.pitch).toBe(600);
+      expect(metronome.soundSettings.accent.decay).toBe(0.15);
+      expect(metronome.soundSettings.accent.waveform).toBe('triangle');
+    });
+
+    test('setSoundSettings throws for invalid beat type', () => {
+      expect(() => metronome.setSoundSettings('invalid', { pitch: 440 })).toThrow(RangeError);
+    });
+
+    test('resetSoundSettings restores defaults', () => {
+      metronome.setSoundSettings('accent', { pitch: 1000, decay: 0.2, waveform: 'sawtooth' });
+      metronome.resetSoundSettings();
+      expect(metronome.soundSettings.accent.pitch).toBe(440);
+      expect(metronome.soundSettings.accent.decay).toBe(0.08);
+      expect(metronome.soundSettings.accent.waveform).toBe('sine');
+    });
+
+    test('sound settings are independent between instances', () => {
+      const metronome2 = new Metronome();
+      metronome.setSoundSettings('accent', { pitch: 1000 });
+      expect(metronome2.soundSettings.accent.pitch).toBe(440);
+    });
   });
 });

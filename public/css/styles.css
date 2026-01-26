@@ -40,12 +40,29 @@ body {
 
 header {
   text-align: center;
+  position: relative;
 }
 
 header h1 {
   font-size: 2rem;
   font-weight: 300;
   letter-spacing: 2px;
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#settings-btn {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 main {
@@ -234,6 +251,110 @@ footer {
   text-align: center;
   color: var(--text-muted);
   font-size: 0.8rem;
+}
+
+/* Settings Dialog */
+.settings-dialog {
+  background: var(--surface-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 12px;
+  padding: 0;
+  max-width: 90vw;
+  width: 360px;
+  max-height: 85vh;
+  overflow: hidden;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+
+.settings-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--bg-color);
+}
+
+.dialog-header h2 {
+  font-size: 1.2rem;
+  font-weight: 400;
+  margin: 0;
+}
+
+.dialog-content {
+  padding: 20px;
+  overflow-y: auto;
+  max-height: calc(85vh - 130px);
+}
+
+.sound-group {
+  border: 1px solid var(--bg-color);
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.sound-group:last-child {
+  margin-bottom: 0;
+}
+
+.sound-group legend {
+  padding: 0 8px;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.setting-row:last-child {
+  margin-bottom: 0;
+}
+
+.setting-row label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.setting-row input[type="number"],
+.setting-row select {
+  width: 120px;
+  padding: 8px 12px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.setting-row input[type="number"]:focus,
+.setting-row select:focus {
+  outline: 2px solid var(--primary-color);
+}
+
+.dialog-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--bg-color);
+  display: flex;
+  justify-content: center;
+}
+
+.dialog-footer .btn {
+  padding: 10px 20px;
+  font-size: 0.9rem;
 }
 
 @media (max-width: 400px) {
