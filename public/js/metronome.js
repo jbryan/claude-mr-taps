@@ -6,11 +6,10 @@ export class Metronome {
   static MAX_BPM = 300;
   static MIN_BEATS = 1;
   static MAX_BEATS = 20;
-  static SUBDIVISIONS = {
-    NONE: 1,
-    EIGHTH: 2,
-    SIXTEENTH: 4,
-    TRIPLET: 3,
+  static DEFAULT_SUBDIVISION_VOLUMES = {
+    eighth: 0,    // The "&" (50% through beat)
+    sixteenth: 0, // The "e" and "a" (25% and 75% through beat)
+    triplet: 0,   // Triplet subdivisions (33% and 66% through beat)
   };
   static WAVEFORMS = ['sine', 'square', 'triangle', 'sawtooth'];
   static DEFAULT_SOUND_SETTINGS = {
@@ -24,10 +23,9 @@ export class Metronome {
     this.bpm = 120;
     this.beatsPerMeasure = 4;
     this.secondaryBeatsPerMeasure = null; // null = disabled, 1-20 = enabled
-    this.subdivision = Metronome.SUBDIVISIONS.NONE;
+    this.subdivisionVolumes = { ...Metronome.DEFAULT_SUBDIVISION_VOLUMES };
     this.isPlaying = false;
     this.currentBeat = 0;
-    this.currentSubdivision = 0;
     this.currentMeasure = 0; // 0 = primary, 1 = secondary
     this.nextNoteTime = 0;
     this.schedulerTimerId = null;
@@ -42,13 +40,6 @@ export class Metronome {
    */
   get beatInterval() {
     return 60.0 / this.bpm;
-  }
-
-  /**
-   * Get the interval between subdivisions in seconds
-   */
-  get subdivisionInterval() {
-    return this.beatInterval / this.subdivision;
   }
 
   /**
@@ -106,15 +97,22 @@ export class Metronome {
   }
 
   /**
-   * Set the subdivision type
-   * @param {number} subdivision - Subdivision value from Metronome.SUBDIVISIONS
+   * Set the volume for a subdivision type
+   * @param {string} type - 'eighth', 'sixteenth', or 'triplet'
+   * @param {number} volume - Volume from 0 to 1
    */
-  setSubdivision(subdivision) {
-    const validSubdivisions = Object.values(Metronome.SUBDIVISIONS);
-    if (!validSubdivisions.includes(subdivision)) {
-      throw new RangeError(`Invalid subdivision. Must be one of: ${validSubdivisions.join(', ')}`);
+  setSubdivisionVolume(type, volume) {
+    if (!(type in this.subdivisionVolumes)) {
+      throw new RangeError(`Invalid subdivision type: ${type}. Must be 'eighth', 'sixteenth', or 'triplet'`);
     }
-    this.subdivision = subdivision;
+    this.subdivisionVolumes[type] = Math.max(0, Math.min(1, volume));
+  }
+
+  /**
+   * Reset subdivision volumes to defaults (all zero)
+   */
+  resetSubdivisionVolumes() {
+    this.subdivisionVolumes = { ...Metronome.DEFAULT_SUBDIVISION_VOLUMES };
   }
 
   /**
@@ -122,8 +120,9 @@ export class Metronome {
    * @param {number} time - AudioContext time to play the sound
    * @param {boolean} isAccent - Whether this is an accented beat
    * @param {boolean} isSubdivision - Whether this is a subdivision beat
+   * @param {number} gainMultiplier - Multiplier for the gain (0-1), used for subdivision volumes
    */
-  playBeep(time, isAccent = false, isSubdivision = false) {
+  playBeep(time, isAccent = false, isSubdivision = false, gainMultiplier = 1) {
     const oscillator = this.audioContext.createOscillator();
     const gainNode = this.audioContext.createGain();
 
@@ -148,9 +147,12 @@ export class Metronome {
     const decayTime = settings.decay;
     const duration = attackTime + decayTime;
 
+    // Apply gain multiplier to the final gain
+    const finalGain = settings.gain * gainMultiplier;
+
     // Start at 0, quick attack to peak, then exponential decay
     gainNode.gain.setValueAtTime(0.001, time);
-    gainNode.gain.exponentialRampToValueAtTime(settings.gain, time + attackTime);
+    gainNode.gain.exponentialRampToValueAtTime(Math.max(0.001, finalGain), time + attackTime);
     gainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
 
     oscillator.start(time);
@@ -177,43 +179,53 @@ export class Metronome {
   }
 
   /**
-   * Schedule the next note(s)
+   * Schedule the next beat and all its subdivisions
    */
   scheduleNote() {
     const isFirstBeat = this.currentBeat === 0;
-    const isMainBeat = this.currentSubdivision === 0;
+    const beatTime = this.nextNoteTime;
+    const interval = this.beatInterval;
 
-    if (isMainBeat) {
-      this.playBeep(this.nextNoteTime, isFirstBeat, false);
-    } else {
-      this.playBeep(this.nextNoteTime, false, true);
+    // Play the main beat
+    this.playBeep(beatTime, isFirstBeat, false);
+
+    // Schedule eighth note subdivision (&) at 50% through the beat
+    if (this.subdivisionVolumes.eighth > 0) {
+      this.playBeep(beatTime + interval * 0.5, false, true, this.subdivisionVolumes.eighth);
+    }
+
+    // Schedule sixteenth note subdivisions (e and a) at 25% and 75% through the beat
+    if (this.subdivisionVolumes.sixteenth > 0) {
+      this.playBeep(beatTime + interval * 0.25, false, true, this.subdivisionVolumes.sixteenth);
+      this.playBeep(beatTime + interval * 0.75, false, true, this.subdivisionVolumes.sixteenth);
+    }
+
+    // Schedule triplet subdivisions at 33% and 66% through the beat
+    if (this.subdivisionVolumes.triplet > 0) {
+      this.playBeep(beatTime + interval / 3, false, true, this.subdivisionVolumes.triplet);
+      this.playBeep(beatTime + interval * 2 / 3, false, true, this.subdivisionVolumes.triplet);
     }
 
     // Trigger callback for UI updates
     if (this.onBeat) {
       this.onBeat({
         beat: this.currentBeat,
-        subdivision: this.currentSubdivision,
-        isAccent: isFirstBeat && isMainBeat,
+        isAccent: isFirstBeat,
         measure: this.currentMeasure,
       });
     }
 
-    // Advance to next subdivision
-    this.currentSubdivision++;
-    if (this.currentSubdivision >= this.subdivision) {
-      this.currentSubdivision = 0;
-      this.currentBeat++;
-      if (this.currentBeat >= this.currentBeatsPerMeasure) {
-        this.currentBeat = 0;
-        // Alternate measures if secondary is set
-        if (this.secondaryBeatsPerMeasure !== null) {
-          this.currentMeasure = this.currentMeasure === 0 ? 1 : 0;
-        }
+    // Advance to next beat
+    this.currentBeat++;
+    if (this.currentBeat >= this.currentBeatsPerMeasure) {
+      this.currentBeat = 0;
+      // Alternate measures if secondary is set
+      if (this.secondaryBeatsPerMeasure !== null) {
+        this.currentMeasure = this.currentMeasure === 0 ? 1 : 0;
       }
     }
 
-    this.nextNoteTime += this.subdivisionInterval;
+    this.nextNoteTime += interval;
   }
 
   /**
@@ -238,7 +250,6 @@ export class Metronome {
 
     this.isPlaying = true;
     this.currentBeat = 0;
-    this.currentSubdivision = 0;
     this.currentMeasure = 0;
     this.nextNoteTime = this.audioContext.currentTime;
     this.scheduler();

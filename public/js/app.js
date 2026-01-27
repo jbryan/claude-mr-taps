@@ -12,8 +12,19 @@ const tempoDown5 = document.getElementById('tempo-down-5');
 const tempoUp5 = document.getElementById('tempo-up-5');
 const beatsSelect = document.getElementById('beats-select');
 const secondaryBeatsSelect = document.getElementById('secondary-beats-select');
-const subdivisionSelect = document.getElementById('subdivision-select');
 const playBtn = document.getElementById('play-btn');
+
+// Subdivision volume sliders
+const subdivisionSliders = {
+  eighth: document.getElementById('eighth-volume'),
+  sixteenth: document.getElementById('sixteenth-volume'),
+  triplet: document.getElementById('triplet-volume'),
+};
+const subdivisionValues = {
+  eighth: document.getElementById('eighth-value'),
+  sixteenth: document.getElementById('sixteenth-value'),
+  triplet: document.getElementById('triplet-value'),
+};
 const beatIndicators = document.getElementById('beat-indicators');
 const playIcon = playBtn.querySelector('.play-icon');
 const stopIcon = playBtn.querySelector('.stop-icon');
@@ -23,6 +34,7 @@ const settingsBtn = document.getElementById('settings-btn');
 const settingsDialog = document.getElementById('settings-dialog');
 const settingsClose = document.getElementById('settings-close');
 const settingsReset = document.getElementById('settings-reset');
+const themeSelect = document.getElementById('theme-select');
 
 // Sound setting inputs
 const soundInputs = {
@@ -46,14 +58,24 @@ const soundInputs = {
 // Initialize metronome
 const metronome = new Metronome();
 
+// Current theme
+let currentTheme = 'default';
+
+// Apply theme to document
+function applyTheme(theme) {
+  currentTheme = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
 // Save all settings to localStorage
 function saveSettings() {
   const settings = {
     bpm: metronome.bpm,
     beatsPerMeasure: metronome.beatsPerMeasure,
     secondaryBeatsPerMeasure: metronome.secondaryBeatsPerMeasure,
-    subdivision: metronome.subdivision,
+    subdivisionVolumes: metronome.subdivisionVolumes,
     soundSettings: metronome.soundSettings,
+    theme: currentTheme,
   };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
@@ -78,8 +100,12 @@ function loadSettings() {
       if (settings.secondaryBeatsPerMeasure !== undefined) {
         metronome.setSecondaryBeatsPerMeasure(settings.secondaryBeatsPerMeasure);
       }
-      if (settings.subdivision) {
-        metronome.setSubdivision(settings.subdivision);
+      if (settings.subdivisionVolumes) {
+        for (const type of ['eighth', 'sixteenth', 'triplet']) {
+          if (settings.subdivisionVolumes[type] !== undefined) {
+            metronome.setSubdivisionVolume(type, settings.subdivisionVolumes[type]);
+          }
+        }
       }
       if (settings.soundSettings) {
         for (const beatType of ['accent', 'regular', 'subdivision']) {
@@ -87,6 +113,9 @@ function loadSettings() {
             metronome.setSoundSettings(beatType, settings.soundSettings[beatType]);
           }
         }
+      }
+      if (settings.theme) {
+        applyTheme(settings.theme);
       }
       return true;
     }
@@ -122,7 +151,13 @@ function initUI() {
   tempoSlider.value = metronome.bpm;
   beatsSelect.value = metronome.beatsPerMeasure;
   secondaryBeatsSelect.value = metronome.secondaryBeatsPerMeasure || 0;
-  subdivisionSelect.value = metronome.subdivision;
+
+  // Set subdivision volume sliders
+  for (const type of ['eighth', 'sixteenth', 'triplet']) {
+    const volumePercent = Math.round(metronome.subdivisionVolumes[type] * 100);
+    subdivisionSliders[type].value = volumePercent;
+    subdivisionValues[type].textContent = `${volumePercent}%`;
+  }
 
   // Create beat indicators
   updateBeatIndicators();
@@ -171,11 +206,7 @@ function highlightBeat(beatInfo) {
     indicator.classList.remove('active', 'accent');
     const indicatorBeat = parseInt(indicator.dataset.beat, 10);
     const indicatorMeasure = parseInt(indicator.dataset.measure, 10);
-    if (
-      indicatorBeat === beatInfo.beat &&
-      indicatorMeasure === beatInfo.measure &&
-      beatInfo.subdivision === 0
-    ) {
+    if (indicatorBeat === beatInfo.beat && indicatorMeasure === beatInfo.measure) {
       indicator.classList.add('active');
       if (beatInfo.isAccent) {
         indicator.classList.add('accent');
@@ -251,11 +282,15 @@ secondaryBeatsSelect.addEventListener('change', (e) => {
   saveSettings();
 });
 
-subdivisionSelect.addEventListener('change', (e) => {
-  const subdivision = parseInt(e.target.value, 10);
-  metronome.setSubdivision(subdivision);
-  saveSettings();
-});
+// Subdivision volume slider event listeners
+for (const type of ['eighth', 'sixteenth', 'triplet']) {
+  subdivisionSliders[type].addEventListener('input', (e) => {
+    const volumePercent = parseInt(e.target.value, 10);
+    metronome.setSubdivisionVolume(type, volumePercent / 100);
+    subdivisionValues[type].textContent = `${volumePercent}%`;
+    saveSettings();
+  });
+}
 
 playBtn.addEventListener('click', () => {
   metronome.toggle();
@@ -285,6 +320,7 @@ metronome.onBeat = highlightBeat;
 
 // Settings Dialog Functions
 function updateSettingsUI() {
+  themeSelect.value = currentTheme;
   const settings = metronome.soundSettings;
   for (const beatType of ['accent', 'regular', 'subdivision']) {
     soundInputs[beatType].pitch.value = settings[beatType].pitch;
@@ -322,7 +358,19 @@ settingsDialog.addEventListener('click', (e) => {
 
 settingsReset.addEventListener('click', () => {
   metronome.resetSoundSettings();
+  metronome.resetSubdivisionVolumes();
+  applyTheme('default');
+  // Reset subdivision sliders in UI
+  for (const type of ['eighth', 'sixteenth', 'triplet']) {
+    subdivisionSliders[type].value = 0;
+    subdivisionValues[type].textContent = '0%';
+  }
   updateSettingsUI();
+  saveSettings();
+});
+
+themeSelect.addEventListener('change', (e) => {
+  applyTheme(e.target.value);
   saveSettings();
 });
 

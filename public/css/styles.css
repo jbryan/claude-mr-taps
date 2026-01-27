@@ -4,13 +4,32 @@
   padding: 0;
 }
 
-:root {
+:root,
+[data-theme="default"] {
   --primary-color: #4a90d9;
   --accent-color: #e94560;
   --bg-color: #1a1a2e;
   --surface-color: #16213e;
   --text-color: #eee;
   --text-muted: #888;
+}
+
+[data-theme="black"] {
+  --primary-color: #22c55e;
+  --accent-color: #22c55e;
+  --bg-color: #000000;
+  --surface-color: #1a1a1a;
+  --text-color: #e5e5e5;
+  --text-muted: #737373;
+}
+
+[data-theme="light"] {
+  --primary-color: #2563eb;
+  --accent-color: #dc2626;
+  --bg-color: #ffffff;
+  --surface-color: #f3f4f6;
+  --text-color: #1f2937;
+  --text-muted: #6b7280;
 }
 
 html, body {
@@ -231,6 +250,80 @@ main {
   outline: 2px solid var(--primary-color);
 }
 
+.subdivision-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 15px;
+  background: var(--surface-color);
+  border-radius: 12px;
+}
+
+.subdivision-label {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+.subdivision-slider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.subdivision-name {
+  font-size: 0.85rem;
+  color: var(--text-color);
+  width: 70px;
+  flex-shrink: 0;
+}
+
+.subdivision-slider input[type="range"] {
+  flex: 1;
+  height: 24px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.subdivision-slider input[type="range"]::-webkit-slider-track {
+  height: 6px;
+  background: var(--bg-color);
+  border-radius: 3px;
+}
+
+.subdivision-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  margin-top: -6px;
+}
+
+.subdivision-slider input[type="range"]::-moz-range-track {
+  height: 6px;
+  background: var(--bg-color);
+  border-radius: 3px;
+}
+
+.subdivision-slider input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  border: none;
+}
+
+.subdivision-value {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  width: 35px;
+  text-align: right;
+}
+
 .play-section {
   display: flex;
   justify-content: center;
@@ -300,6 +393,26 @@ footer {
   padding: 20px;
   overflow-y: auto;
   max-height: calc(85vh - 130px);
+}
+
+.theme-selector {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--bg-color);
+}
+
+.theme-selector select {
+  padding: 10px 15px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.theme-selector select:focus {
+  outline: 2px solid var(--primary-color);
 }
 
 .sound-group {

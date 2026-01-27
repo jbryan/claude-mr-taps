@@ -2,6 +2,20 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.01.27-1] - 2026-01-27
+
+### Added
+- Independent subdivision volume sliders for 8ths (&), 16ths (e, a), and triplets
+- All three subdivision types can be layered simultaneously
+- Color theme selector in settings: Default, Black (green accents), and Light
+
+### Changed
+- Subdivisions now use volume sliders (0-100%) instead of dropdown selector
+- Subdivision scheduling now calculates timing per-beat rather than stepping through subdivisions
+
+### Removed
+- Single subdivision type selector (replaced by independent volume controls)
+
 ## [2026.01.26-1] - 2026-01-26
 
 ### Added

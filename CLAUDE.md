@@ -9,7 +9,7 @@ Mr. Taps is a vanilla JavaScript PWA metronome application using the Web Audio A
 ## Commands
 
 ```bash
-npm test              # Run Jest test suite (47 tests)
+npm test              # Run Jest test suite (45 tests)
 npm start             # Serve public/ directory at http://localhost:3000
 npm run generate-icons # Regenerate PWA icons (requires Canvas library)
 ```
@@ -28,12 +28,17 @@ No lint or build commands - source files are served directly.
 - Three beat types with independent sound settings: accent (first beat), regular, subdivision
 - Percussive envelope: 5ms attack, configurable decay with exponential gain ramping
 - Default frequencies: 440Hz accent, 880Hz regular, 660Hz subdivision
+- Subdivision volumes (`subdivisionVolumes`): independent 0-1 volumes for eighth, sixteenth, and triplet
+- All subdivision types can play simultaneously at different volumes
 
 **Compound time signatures:**
 Optional `secondaryBeatsPerMeasure` allows alternating between two beat patterns (e.g., 3+4 for 7/4). The `currentMeasure` property tracks which pattern is active (0=primary, 1=secondary).
 
+**Color themes:**
+Three themes available via `data-theme` attribute on `<html>`: default (dark blue), black (green accents), light (white background). Theme stored in localStorage with other settings.
+
 **State persistence:**
-All settings (BPM, beats per measure, secondary beats, subdivision, sound parameters) automatically save to localStorage and restore on load.
+All settings (BPM, beats per measure, secondary beats, subdivision volumes, sound parameters, theme) automatically save to localStorage and restore on load.
 
 ## Testing
 
@@ -49,5 +54,6 @@ npm test -- --testNamePattern="pattern"
 - BPM range: 1-300 (validated in `setTempo`)
 - Beats per measure: 1-20 (validated in `setBeatsPerMeasure`)
 - Secondary beats: null (disabled) or 1-20 (validated in `setSecondaryBeatsPerMeasure`)
-- Subdivision options: none, 8ths, 16ths, triplets
+- Subdivision volumes: 0-1 for each type (eighth, sixteenth, triplet), clamped in `setSubdivisionVolume`
 - Waveform options: sine, square, triangle, sawtooth
+- Theme options: default, black, light

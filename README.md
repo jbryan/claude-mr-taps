@@ -9,7 +9,8 @@ no internet connection.
 - **Tempo Control**: Supports tempos from 1 BPM up to 300 BPM with ±1 and ±5 buttons
 - **Time Signature**: Set the number of beats in a measure from 1 to 20
 - **Compound Time**: Optional secondary beats for asymmetric meters (e.g., 7/4 as 3+4)
-- **Subdivisions**: Beats can be subdivided into 8ths, 16ths, and triplets
+- **Subdivisions**: Independent volume controls for 8ths, 16ths, and triplets (can layer all three)
+- **Color Themes**: Default (dark blue), Black (green accents), and Light themes
 - **Audio**: Uses Web Audio API to generate precise 440Hz beeps
 - **Offline Support**: Works without an internet connection once installed
 - **Installable**: Can be added to your home screen on mobile devices
@@ -68,15 +69,16 @@ To run the test suite:
 npm run test
 ```
 
-The test suite includes 37 tests covering:
+The test suite includes 45 tests covering:
 - Metronome initialization and default values
 - Tempo setting and validation (1-300 BPM)
 - Beats per measure setting and validation (1-20)
-- Subdivision settings (none, 8ths, 16ths, triplets)
+- Subdivision volume controls
 - Beat interval calculations
 - Start/stop functionality
 - Toggle behavior
 - Callback functionality
+- Sound settings
 
 ## Usage
 
@@ -87,9 +89,13 @@ The test suite includes 37 tests covering:
 - **±5 Buttons**: Adjust tempo by 5 BPM
 - **Primary Beats**: Select 1-20 beats per measure
 - **Secondary Beats**: Optional second measure for compound time (None, or 1-20)
-- **Subdivision**: Choose None, Eighth Notes, Sixteenth Notes, or Triplets
+- **Subdivision Sliders**: Independently control volume (0-100%) for:
+  - 8ths (&): plays at 50% through each beat
+  - 16ths (e, a): plays at 25% and 75% through each beat
+  - Triplets: plays at 33% and 66% through each beat
 - **Play/Stop Button**: Start or stop the metronome
 - **Spacebar**: Keyboard shortcut to toggle play/stop
+- **Settings**: Color theme selection and sound customization
 
 ### Sound Guide
 

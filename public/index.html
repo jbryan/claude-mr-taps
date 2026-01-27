@@ -59,14 +59,23 @@
           </select>
         </div>
 
-        <div class="control-group">
-          <label for="subdivision-select">Subdivision</label>
-          <select id="subdivision-select">
-            <option value="1">None</option>
-            <option value="2">Eighth Notes</option>
-            <option value="4">Sixteenth Notes</option>
-            <option value="3">Triplets</option>
-          </select>
+        <div class="subdivision-section">
+          <label class="subdivision-label">Subdivision Volumes</label>
+          <div class="subdivision-slider">
+            <span class="subdivision-name">8ths (&)</span>
+            <input type="range" id="eighth-volume" min="0" max="100" value="0">
+            <span id="eighth-value" class="subdivision-value">0%</span>
+          </div>
+          <div class="subdivision-slider">
+            <span class="subdivision-name">16ths (e a)</span>
+            <input type="range" id="sixteenth-volume" min="0" max="100" value="0">
+            <span id="sixteenth-value" class="subdivision-value">0%</span>
+          </div>
+          <div class="subdivision-slider">
+            <span class="subdivision-name">Triplets</span>
+            <input type="range" id="triplet-volume" min="0" max="100" value="0">
+            <span id="triplet-value" class="subdivision-value">0%</span>
+          </div>
         </div>
       </section>
 
@@ -94,6 +103,15 @@
       </button>
     </div>
     <div class="dialog-content">
+      <div class="control-group theme-selector">
+        <label for="theme-select">Color Theme</label>
+        <select id="theme-select">
+          <option value="default">Default</option>
+          <option value="black">Black</option>
+          <option value="light">Light</option>
+        </select>
+      </div>
+
       <fieldset class="sound-group">
         <legend>Accent Beat</legend>
         <div class="setting-row">

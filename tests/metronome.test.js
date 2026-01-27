@@ -15,7 +15,7 @@ describe('Metronome', () => {
     test('initializes with default values', () => {
       expect(metronome.bpm).toBe(120);
       expect(metronome.beatsPerMeasure).toBe(4);
-      expect(metronome.subdivision).toBe(Metronome.SUBDIVISIONS.NONE);
+      expect(metronome.subdivisionVolumes).toEqual({ eighth: 0, sixteenth: 0, triplet: 0 });
       expect(metronome.isPlaying).toBe(false);
     });
 
@@ -99,25 +99,36 @@ describe('Metronome', () => {
     });
   });
 
-  describe('setSubdivision', () => {
-    test('sets valid subdivisions', () => {
-      metronome.setSubdivision(Metronome.SUBDIVISIONS.NONE);
-      expect(metronome.subdivision).toBe(1);
+  describe('setSubdivisionVolume', () => {
+    test('sets valid subdivision volumes', () => {
+      metronome.setSubdivisionVolume('eighth', 0.5);
+      expect(metronome.subdivisionVolumes.eighth).toBe(0.5);
 
-      metronome.setSubdivision(Metronome.SUBDIVISIONS.EIGHTH);
-      expect(metronome.subdivision).toBe(2);
+      metronome.setSubdivisionVolume('sixteenth', 0.75);
+      expect(metronome.subdivisionVolumes.sixteenth).toBe(0.75);
 
-      metronome.setSubdivision(Metronome.SUBDIVISIONS.SIXTEENTH);
-      expect(metronome.subdivision).toBe(4);
-
-      metronome.setSubdivision(Metronome.SUBDIVISIONS.TRIPLET);
-      expect(metronome.subdivision).toBe(3);
+      metronome.setSubdivisionVolume('triplet', 1.0);
+      expect(metronome.subdivisionVolumes.triplet).toBe(1.0);
     });
 
-    test('throws error for invalid subdivision', () => {
-      expect(() => metronome.setSubdivision(5)).toThrow(RangeError);
-      expect(() => metronome.setSubdivision(0)).toThrow(RangeError);
-      expect(() => metronome.setSubdivision(-1)).toThrow(RangeError);
+    test('clamps volume to 0-1 range', () => {
+      metronome.setSubdivisionVolume('eighth', 1.5);
+      expect(metronome.subdivisionVolumes.eighth).toBe(1);
+
+      metronome.setSubdivisionVolume('eighth', -0.5);
+      expect(metronome.subdivisionVolumes.eighth).toBe(0);
+    });
+
+    test('throws error for invalid subdivision type', () => {
+      expect(() => metronome.setSubdivisionVolume('invalid', 0.5)).toThrow(RangeError);
+    });
+
+    test('resetSubdivisionVolumes restores defaults', () => {
+      metronome.setSubdivisionVolume('eighth', 0.8);
+      metronome.setSubdivisionVolume('sixteenth', 0.6);
+      metronome.setSubdivisionVolume('triplet', 0.4);
+      metronome.resetSubdivisionVolumes();
+      expect(metronome.subdivisionVolumes).toEqual({ eighth: 0, sixteenth: 0, triplet: 0 });
     });
   });
 
@@ -138,31 +149,6 @@ describe('Metronome', () => {
     });
   });
 
-  describe('subdivisionInterval', () => {
-    test('equals beat interval when no subdivision', () => {
-      metronome.setTempo(120);
-      metronome.setSubdivision(Metronome.SUBDIVISIONS.NONE);
-      expect(metronome.subdivisionInterval).toBe(0.5);
-    });
-
-    test('calculates correct interval for eighth notes', () => {
-      metronome.setTempo(120);
-      metronome.setSubdivision(Metronome.SUBDIVISIONS.EIGHTH);
-      expect(metronome.subdivisionInterval).toBe(0.25);
-    });
-
-    test('calculates correct interval for sixteenth notes', () => {
-      metronome.setTempo(120);
-      metronome.setSubdivision(Metronome.SUBDIVISIONS.SIXTEENTH);
-      expect(metronome.subdivisionInterval).toBe(0.125);
-    });
-
-    test('calculates correct interval for triplets', () => {
-      metronome.setTempo(120);
-      metronome.setSubdivision(Metronome.SUBDIVISIONS.TRIPLET);
-      expect(metronome.subdivisionInterval).toBeCloseTo(0.5 / 3);
-    });
-  });
 
   describe('start/stop', () => {
     test('start sets isPlaying to true', () => {
@@ -178,7 +164,6 @@ describe('Metronome', () => {
 
     test('start resets beat counter to beginning of measure', () => {
       metronome.currentBeat = 3;
-      metronome.currentSubdivision = 2;
       metronome.start();
       // After start, scheduler runs immediately and advances one beat
       // So we check that it didn't continue from beat 3
@@ -218,8 +203,8 @@ describe('Metronome', () => {
       metronome.setTempo(300); // Fast tempo for quick test
       metronome.onBeat = (info) => {
         expect(info).toHaveProperty('beat');
-        expect(info).toHaveProperty('subdivision');
         expect(info).toHaveProperty('isAccent');
+        expect(info).toHaveProperty('measure');
         metronome.stop();
         done();
       };
@@ -229,7 +214,7 @@ describe('Metronome', () => {
     test('first beat is accented', (done) => {
       metronome.setTempo(300);
       metronome.onBeat = (info) => {
-        if (info.beat === 0 && info.subdivision === 0) {
+        if (info.beat === 0) {
           expect(info.isAccent).toBe(true);
           metronome.stop();
           done();
@@ -256,11 +241,10 @@ describe('Metronome', () => {
       expect(Metronome.MAX_BEATS).toBe(20);
     });
 
-    test('SUBDIVISIONS has correct values', () => {
-      expect(Metronome.SUBDIVISIONS.NONE).toBe(1);
-      expect(Metronome.SUBDIVISIONS.EIGHTH).toBe(2);
-      expect(Metronome.SUBDIVISIONS.SIXTEENTH).toBe(4);
-      expect(Metronome.SUBDIVISIONS.TRIPLET).toBe(3);
+    test('DEFAULT_SUBDIVISION_VOLUMES has correct values', () => {
+      expect(Metronome.DEFAULT_SUBDIVISION_VOLUMES.eighth).toBe(0);
+      expect(Metronome.DEFAULT_SUBDIVISION_VOLUMES.sixteenth).toBe(0);
+      expect(Metronome.DEFAULT_SUBDIVISION_VOLUMES.triplet).toBe(0);
     });
 
     test('WAVEFORMS has correct values', () => {
