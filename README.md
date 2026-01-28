@@ -2,6 +2,8 @@
 
 [![Made with AI](https://img.shields.io/badge/Made%20with-AI-lightgrey?style=for-the-badge)](https://github.com/mefengl/made-by-ai)
 
+**[Try it live](https://jbryan.github.io/claude-mr-taps/)**
+
 One of my frustrations as a musician is the lack of good free metronome apps.
 Standalone metronomes cost anywhere from a few tens of dollars for the
 old-school mechanical ones up to as much as $150 for a "nice" modern digital
