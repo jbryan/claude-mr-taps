@@ -2,6 +2,19 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.01.28-4] - 2026-01-28
+
+### Added
+- Info button (ⓘ) in header with tabbed dialog showing:
+  - Version information
+  - MIT license text
+  - Changelog history (now loaded dynamically from CHANGELOG.md)
+- Automated release script (`npm run release`) that updates version across all files
+
+### Changed
+- Version and changelog are now loaded dynamically instead of being hardcoded
+- CHANGELOG.md moved to public/ directory for runtime access
+
 ## [2026.01.28-3] - 2026-01-28
 
 ### Added

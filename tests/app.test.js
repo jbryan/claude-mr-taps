@@ -24,7 +24,13 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 // Mock navigator.serviceWorker
 Object.defineProperty(navigator, 'serviceWorker', {
   value: {
-    register: () => Promise.resolve({ scope: '/' }),
+    register: () => Promise.resolve({
+      scope: '/',
+      waiting: null,
+      installing: null,
+      addEventListener: jest.fn(),
+    }),
+    addEventListener: jest.fn(),
   },
   writable: true,
 });
@@ -105,11 +111,28 @@ function setupDOM() {
         <button class="tab-btn" data-tab="license">License</button>
         <button class="tab-btn" data-tab="changelog">Changelog</button>
       </div>
-      <div id="tab-version" class="tab-panel active">Version content</div>
+      <div id="tab-version" class="tab-panel active"><span id="app-version">...</span></div>
       <div id="tab-license" class="tab-panel">License content</div>
-      <div id="tab-changelog" class="tab-panel">Changelog content</div>
+      <div id="tab-changelog" class="tab-panel">Loading...</div>
     </dialog>
   `;
+
+  // Mock fetch for version.json and CHANGELOG.md
+  global.fetch = jest.fn((url) => {
+    if (url.includes('version.json')) {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ version: '2026.01.28-4' }),
+      });
+    }
+    if (url.includes('CHANGELOG.md')) {
+      return Promise.resolve({
+        ok: true,
+        text: () => Promise.resolve('# Changelog\n\n## [2026.01.28-4]\n\n### Added\n- Test feature'),
+      });
+    }
+    return Promise.reject(new Error('Unknown URL'));
+  });
 
   // Mock dialog methods
   const settingsDialog = document.getElementById('settings-dialog');
@@ -961,15 +984,42 @@ describe('App', () => {
   });
 
   describe('info dialog', () => {
-    test('info button opens dialog', async () => {
+    test('info button opens dialog after loading content', async () => {
       await import('../public/js/app.js');
 
       const infoBtn = document.getElementById('info-btn');
       const infoDialog = document.getElementById('info-dialog');
 
       infoBtn.click();
+      // Wait for async fetch operations
+      await new Promise((resolve) => setTimeout(resolve, 0));
 
       expect(infoDialog.showModal).toHaveBeenCalled();
+    });
+
+    test('info button loads version from version.json', async () => {
+      await import('../public/js/app.js');
+
+      const infoBtn = document.getElementById('info-btn');
+      const appVersion = document.getElementById('app-version');
+
+      infoBtn.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(appVersion.textContent).toBe('2026.01.28-4');
+    });
+
+    test('info button loads changelog from CHANGELOG.md', async () => {
+      await import('../public/js/app.js');
+
+      const infoBtn = document.getElementById('info-btn');
+      const changelogPanel = document.getElementById('tab-changelog');
+
+      infoBtn.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(changelogPanel.innerHTML).toContain('2026.01.28-4');
+      expect(changelogPanel.innerHTML).toContain('Test feature');
     });
 
     test('close button closes dialog', async () => {

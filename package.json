@@ -7,7 +7,8 @@
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "start": "npx serve public",
-    "generate-icons": "node scripts/generate-icons.js"
+    "generate-icons": "node scripts/generate-icons.js",
+    "release": "node scripts/release.js"
   },
   "keywords": [
     "metronome",

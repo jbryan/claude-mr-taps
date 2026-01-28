@@ -643,6 +643,18 @@ footer {
   margin-bottom: 4px;
 }
 
+.changelog-entry code {
+  background: var(--bg-color);
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+
+.loading-text {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 @media (max-width: 400px) {
   .app {
     padding: 15px;

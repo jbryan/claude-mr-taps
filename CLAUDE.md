@@ -9,19 +9,35 @@ Mr. Taps is a vanilla JavaScript PWA metronome application using the Web Audio A
 ## Commands
 
 ```bash
-npm test              # Run Jest test suite (142 tests) with coverage report
+npm test              # Run Jest test suite (150 tests) with coverage report
 npm start             # Serve public/ directory at http://localhost:3000
 npm run generate-icons # Regenerate PWA icons (requires Canvas library)
+npm run release <ver> # Update version across all files (e.g., npm run release 2026.01.29-1)
 ```
 
 No lint or build commands - source files are served directly.
+
+## Releasing
+
+To create a new release:
+
+1. Update `public/CHANGELOG.md` with release notes
+2. Run `npm run release <version>` (e.g., `npm run release 2026.01.29-1`)
+   - This updates: `package.json`, `public/version.json`, and `public/sw.js` cache name
+3. Run `npm test` to verify everything works
+4. Commit: `git add -A && git commit -m "Release <version>"`
+5. Tag: `git tag v<version>`
+
+Version format: `YYYY.MM.DD-N` where N is the release number for that day.
 
 ## Architecture
 
 **Core separation:**
 - `public/js/metronome.js` - Metronome class with all audio logic (Web Audio API scheduling, oscillator synthesis, percussive envelope generation)
-- `public/js/app.js` - UI layer handling DOM events, beat indicators, settings dialog, and localStorage persistence (key: `'mr-taps-settings'`)
-- `public/sw.js` - Service worker for offline caching (cache version: v3)
+- `public/js/app.js` - UI layer handling DOM events, beat indicators, settings/info dialogs, and localStorage persistence (key: `'mr-taps-settings'`)
+- `public/sw.js` - Service worker for offline caching (cache version auto-incremented by release script)
+- `public/version.json` - Single source of truth for version number (loaded dynamically by info dialog)
+- `public/CHANGELOG.md` - Changelog in Keep a Changelog format (loaded dynamically by info dialog)
 
 **Audio synthesis details:**
 - Uses look-ahead scheduling pattern (`scheduleNote`/`scheduler` methods) to prevent timing glitches

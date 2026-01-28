@@ -560,8 +560,118 @@ for (const beatType of ['accent', 'regular', 'subdivision']) {
   });
 }
 
+// Info Dialog Elements for dynamic content
+const appVersionSpan = document.getElementById('app-version');
+const changelogPanel = document.getElementById('tab-changelog');
+
+// Cache for loaded content
+let versionLoaded = false;
+let changelogLoaded = false;
+
+// Load version from version.json
+async function loadVersion() {
+  if (versionLoaded) return;
+  try {
+    const response = await fetch('./version.json');
+    if (response.ok) {
+      const data = await response.json();
+      if (appVersionSpan) {
+        appVersionSpan.textContent = data.version;
+      }
+      versionLoaded = true;
+    }
+  } catch (e) {
+    console.warn('Could not load version:', e);
+  }
+}
+
+// Parse changelog markdown to HTML
+function parseChangelog(markdown) {
+  const lines = markdown.split('\n');
+  let html = '';
+  let inList = false;
+  let inEntry = false;
+
+  for (const line of lines) {
+    // Skip the main title and description
+    if (line.startsWith('# ') || line.startsWith('All notable')) {
+      continue;
+    }
+
+    // Version header (## [version] - date)
+    const versionMatch = line.match(/^## \[([^\]]+)\]/);
+    if (versionMatch) {
+      if (inList) {
+        html += '</ul>';
+        inList = false;
+      }
+      if (inEntry) {
+        html += '</div>';
+      }
+      html += `<div class="changelog-entry"><h4>${versionMatch[1]}</h4>`;
+      inEntry = true;
+      continue;
+    }
+
+    // Section header (### Added, ### Changed, etc.)
+    if (line.startsWith('### ')) {
+      if (inList) {
+        html += '</ul>';
+        inList = false;
+      }
+      continue; // Skip section headers, just show the items
+    }
+
+    // List item
+    if (line.startsWith('- ')) {
+      if (!inList) {
+        html += '<ul>';
+        inList = true;
+      }
+      const content = line.substring(2).replace(/`([^`]+)`/g, '<code>$1</code>');
+      html += `<li>${content}</li>`;
+      continue;
+    }
+
+    // Nested list item (indented)
+    if (line.startsWith('  - ')) {
+      const content = line.substring(4).replace(/`([^`]+)`/g, '<code>$1</code>');
+      html += `<li style="margin-left: 15px;">${content}</li>`;
+      continue;
+    }
+  }
+
+  if (inList) {
+    html += '</ul>';
+  }
+  if (inEntry) {
+    html += '</div>';
+  }
+
+  return html;
+}
+
+// Load changelog from CHANGELOG.md
+async function loadChangelog() {
+  if (changelogLoaded) return;
+  try {
+    const response = await fetch('./CHANGELOG.md');
+    if (response.ok) {
+      const markdown = await response.text();
+      if (changelogPanel) {
+        changelogPanel.innerHTML = parseChangelog(markdown);
+      }
+      changelogLoaded = true;
+    }
+  } catch (e) {
+    console.warn('Could not load changelog:', e);
+  }
+}
+
 // Info Dialog Event Listeners
-infoBtn.addEventListener('click', () => {
+infoBtn.addEventListener('click', async () => {
+  // Load dynamic content
+  await Promise.all([loadVersion(), loadChangelog()]);
   infoDialog.showModal();
 });
 
