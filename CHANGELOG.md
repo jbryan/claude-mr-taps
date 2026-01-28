@@ -2,6 +2,14 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.01.28-3] - 2026-01-28
+
+### Added
+- Tap tempo button to set BPM by tapping at desired tempo
+  - Averages last 4 taps for accurate calculation
+  - Resets after 2 seconds of inactivity
+  - Visual feedback on tap
+
 ## [2026.01.28-2] - 2026-01-28
 
 ### Added

@@ -9,7 +9,7 @@ Mr. Taps is a vanilla JavaScript PWA metronome application using the Web Audio A
 ## Commands
 
 ```bash
-npm test              # Run Jest test suite (136 tests) with coverage report
+npm test              # Run Jest test suite (142 tests) with coverage report
 npm start             # Serve public/ directory at http://localhost:3000
 npm run generate-icons # Regenerate PWA icons (requires Canvas library)
 ```

@@ -38,6 +38,7 @@ function setupDOM() {
     <button id="tempo-up">+</button>
     <button id="tempo-down-5">-5</button>
     <button id="tempo-up-5">+5</button>
+    <button id="tap-tempo">Tap Tempo</button>
     <select id="beats-select"></select>
     <select id="secondary-beats-select"><option value="0">None</option></select>
     <button id="play-btn">
@@ -279,6 +280,108 @@ describe('App', () => {
       tempoUp.click();
 
       expect(bpmValue.textContent).toBe('300');
+    });
+  });
+
+  describe('tap tempo', () => {
+    test('tap tempo button exists', async () => {
+      await import('../public/js/app.js');
+
+      const tapTempoBtn = document.getElementById('tap-tempo');
+      expect(tapTempoBtn).not.toBeNull();
+    });
+
+    test('single tap does not change tempo', async () => {
+      await import('../public/js/app.js');
+
+      const tapTempoBtn = document.getElementById('tap-tempo');
+      const bpmValue = document.getElementById('bpm-value');
+
+      tapTempoBtn.click();
+
+      expect(bpmValue.textContent).toBe('120'); // Unchanged
+    });
+
+    test('multiple taps calculate tempo', async () => {
+      jest.useFakeTimers();
+      await import('../public/js/app.js');
+
+      const tapTempoBtn = document.getElementById('tap-tempo');
+      const bpmValue = document.getElementById('bpm-value');
+
+      // Simulate taps at 500ms intervals (120 BPM)
+      tapTempoBtn.click();
+      jest.advanceTimersByTime(500);
+      tapTempoBtn.click();
+      jest.advanceTimersByTime(500);
+      tapTempoBtn.click();
+
+      // Should calculate ~120 BPM
+      expect(bpmValue.textContent).toBe('120');
+
+      jest.useRealTimers();
+    });
+
+    test('taps with 600ms intervals calculate 100 BPM', async () => {
+      jest.useFakeTimers();
+      await import('../public/js/app.js');
+
+      const tapTempoBtn = document.getElementById('tap-tempo');
+      const bpmValue = document.getElementById('bpm-value');
+
+      // Simulate taps at 600ms intervals (100 BPM)
+      tapTempoBtn.click();
+      jest.advanceTimersByTime(600);
+      tapTempoBtn.click();
+      jest.advanceTimersByTime(600);
+      tapTempoBtn.click();
+
+      expect(bpmValue.textContent).toBe('100');
+
+      jest.useRealTimers();
+    });
+
+    test('tap tempo resets after 2 second gap', async () => {
+      jest.useFakeTimers();
+      await import('../public/js/app.js');
+
+      const tapTempoBtn = document.getElementById('tap-tempo');
+      const bpmValue = document.getElementById('bpm-value');
+
+      // First set of taps at 500ms (120 BPM)
+      tapTempoBtn.click();
+      jest.advanceTimersByTime(500);
+      tapTempoBtn.click();
+      expect(bpmValue.textContent).toBe('120');
+
+      // Wait 2.5 seconds (should reset)
+      jest.advanceTimersByTime(2500);
+
+      // New taps at 1000ms (60 BPM)
+      tapTempoBtn.click();
+      jest.advanceTimersByTime(1000);
+      tapTempoBtn.click();
+
+      expect(bpmValue.textContent).toBe('60');
+
+      jest.useRealTimers();
+    });
+
+    test('tap tempo adds active class briefly', async () => {
+      jest.useFakeTimers();
+      await import('../public/js/app.js');
+
+      const tapTempoBtn = document.getElementById('tap-tempo');
+
+      tapTempoBtn.click();
+
+      expect(tapTempoBtn.classList.contains('active')).toBe(true);
+
+      jest.advanceTimersByTime(150);
+
+      expect(tapTempoBtn.classList.contains('active')).toBe(false);
+
+      jest.useRealTimers();
     });
   });
 

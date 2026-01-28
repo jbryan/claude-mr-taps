@@ -10,6 +10,7 @@ const tempoDown = document.getElementById('tempo-down');
 const tempoUp = document.getElementById('tempo-up');
 const tempoDown5 = document.getElementById('tempo-down-5');
 const tempoUp5 = document.getElementById('tempo-up-5');
+const tapTempoBtn = document.getElementById('tap-tempo');
 const beatsSelect = document.getElementById('beats-select');
 const secondaryBeatsSelect = document.getElementById('secondary-beats-select');
 const playBtn = document.getElementById('play-btn');
@@ -78,6 +79,61 @@ let currentTheme = 'default';
 
 // Current sound preset
 let currentSoundPreset = 'default';
+
+// Tap tempo state
+const tapTimes = [];
+const TAP_TIMEOUT = 2000; // Reset after 2 seconds of no taps
+const TAP_SAMPLES = 4; // Number of taps to average
+
+// Calculate BPM from tap times
+function calculateTapTempo() {
+  if (tapTimes.length < 2) return null;
+
+  // Calculate intervals between taps
+  const intervals = [];
+  for (let i = 1; i < tapTimes.length; i++) {
+    intervals.push(tapTimes[i] - tapTimes[i - 1]);
+  }
+
+  // Calculate average interval
+  const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+
+  // Convert to BPM (60000ms = 1 minute)
+  const bpm = Math.round(60000 / avgInterval);
+
+  // Clamp to valid range
+  return Math.max(Metronome.MIN_BPM, Math.min(Metronome.MAX_BPM, bpm));
+}
+
+// Handle tap tempo
+function handleTapTempo() {
+  const now = Date.now();
+
+  // Reset if too long since last tap
+  if (tapTimes.length > 0 && now - tapTimes[tapTimes.length - 1] > TAP_TIMEOUT) {
+    tapTimes.length = 0;
+  }
+
+  // Add current tap time
+  tapTimes.push(now);
+
+  // Keep only recent taps
+  while (tapTimes.length > TAP_SAMPLES) {
+    tapTimes.shift();
+  }
+
+  // Calculate and apply tempo
+  const bpm = calculateTapTempo();
+  if (bpm !== null) {
+    metronome.setTempo(bpm);
+    updateBpmDisplay();
+    saveSettings();
+  }
+
+  // Visual feedback
+  tapTempoBtn.classList.add('active');
+  setTimeout(() => tapTempoBtn.classList.remove('active'), 100);
+}
 
 // Apply theme to document
 function applyTheme(theme) {
@@ -311,6 +367,8 @@ tempoUp5.addEventListener('click', () => {
   updateBpmDisplay();
   saveSettings();
 });
+
+tapTempoBtn.addEventListener('click', handleTapTempo);
 
 beatsSelect.addEventListener('change', (e) => {
   const beats = parseInt(e.target.value, 10);
