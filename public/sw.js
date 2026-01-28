@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mr-taps-v3';
+const CACHE_NAME = 'mr-taps-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -18,7 +18,13 @@ self.addEventListener('install', (event) => {
       return cache.addAll(ASSETS_TO_CACHE);
     })
   );
-  self.skipWaiting();
+});
+
+// Listen for skip waiting message from the app
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // Activate event - clean up old caches

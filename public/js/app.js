@@ -40,6 +40,13 @@ const settingsReset = document.getElementById('settings-reset');
 const themeSelect = document.getElementById('theme-select');
 const soundPresetSelect = document.getElementById('sound-preset');
 
+// Info Dialog Elements
+const infoBtn = document.getElementById('info-btn');
+const infoDialog = document.getElementById('info-dialog');
+const infoClose = document.getElementById('info-close');
+const tabButtons = document.querySelectorAll('.tab-btn');
+const tabPanels = document.querySelectorAll('.tab-panel');
+
 // Sound setting inputs
 const soundInputs = {
   accent: {
@@ -404,7 +411,7 @@ playBtn.addEventListener('click', () => {
 
 // Keyboard controls
 document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' && !settingsDialog.open) {
+  if (e.code === 'Space' && !settingsDialog.open && !infoDialog.open) {
     e.preventDefault();
     metronome.toggle();
     updatePlayButton(metronome.isPlaying);
@@ -414,6 +421,9 @@ document.addEventListener('keydown', (e) => {
   }
   if (e.code === 'Escape' && settingsDialog.open) {
     settingsDialog.close();
+  }
+  if (e.code === 'Escape' && infoDialog.open) {
+    infoDialog.close();
   }
 });
 
@@ -550,17 +560,101 @@ for (const beatType of ['accent', 'regular', 'subdivision']) {
   });
 }
 
-// Register service worker
+// Info Dialog Event Listeners
+infoBtn.addEventListener('click', () => {
+  infoDialog.showModal();
+});
+
+infoClose.addEventListener('click', () => {
+  infoDialog.close();
+});
+
+infoDialog.addEventListener('click', (e) => {
+  // Close when clicking backdrop
+  if (e.target === infoDialog) {
+    infoDialog.close();
+  }
+});
+
+// Tab switching
+tabButtons.forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const tabName = btn.dataset.tab;
+
+    // Update button states
+    tabButtons.forEach((b) => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Update panel visibility
+    tabPanels.forEach((panel) => {
+      panel.classList.remove('active');
+      if (panel.id === `tab-${tabName}`) {
+        panel.classList.add('active');
+      }
+    });
+  });
+});
+
+// Update banner elements
+const updateBanner = document.getElementById('update-banner');
+const updateBtn = document.getElementById('update-btn');
+
+// Track waiting service worker
+let newWorker = null;
+
+// Show update banner
+function showUpdateBanner() {
+  if (updateBanner) {
+    updateBanner.classList.remove('hidden');
+  }
+}
+
+// Handle update button click
+if (updateBtn) {
+  updateBtn.addEventListener('click', () => {
+    if (newWorker) {
+      // Tell the waiting service worker to skip waiting
+      newWorker.postMessage({ type: 'SKIP_WAITING' });
+    }
+  });
+}
+
+// Register service worker and handle updates
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('./sw.js').then(
       (registration) => {
         console.log('ServiceWorker registered:', registration.scope);
+
+        // Check if there's already a waiting worker
+        if (registration.waiting) {
+          newWorker = registration.waiting;
+          showUpdateBanner();
+        }
+
+        // Listen for new service worker installing
+        registration.addEventListener('updatefound', () => {
+          const installingWorker = registration.installing;
+          if (installingWorker) {
+            installingWorker.addEventListener('statechange', () => {
+              if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New version available
+                newWorker = installingWorker;
+                showUpdateBanner();
+              }
+            });
+          }
+        });
       },
       (error) => {
         console.log('ServiceWorker registration failed:', error);
       }
     );
+
+    // Reload page when new service worker takes over
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
   });
 }
 

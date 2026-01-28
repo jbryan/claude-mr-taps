@@ -14,6 +14,11 @@
 <body>
   <div class="app">
     <header>
+      <button id="info-btn" class="btn btn-icon" aria-label="Info">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+        </svg>
+      </button>
       <h1>Mr. Taps</h1>
       <button id="settings-btn" class="btn btn-icon" aria-label="Settings">
         <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -96,6 +101,12 @@
     <footer>
       <p>Spacebar to play/stop</p>
     </footer>
+  </div>
+
+  <!-- Update Banner -->
+  <div id="update-banner" class="update-banner hidden">
+    <span>Update available</span>
+    <button id="update-btn" class="btn btn-update">Refresh</button>
   </div>
 
   <!-- Settings Dialog -->
@@ -243,6 +254,83 @@
     </div>
     <div class="dialog-footer">
       <button id="settings-reset" class="btn">Reset to Defaults</button>
+    </div>
+  </dialog>
+
+  <!-- Info Dialog -->
+  <dialog id="info-dialog" class="info-dialog">
+    <div class="dialog-header">
+      <h2>About Mr. Taps</h2>
+      <button id="info-close" class="btn btn-icon" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+          <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+        </svg>
+      </button>
+    </div>
+    <div class="info-tabs">
+      <button class="tab-btn active" data-tab="version">Version</button>
+      <button class="tab-btn" data-tab="license">License</button>
+      <button class="tab-btn" data-tab="changelog">Changelog</button>
+    </div>
+    <div class="info-content">
+      <div id="tab-version" class="tab-panel active">
+        <h3>Mr. Taps</h3>
+        <p class="version-number">Version <span id="app-version">2026.01.28-4</span></p>
+        <p class="version-desc">A PWA metronome application with customizable sounds and time signatures.</p>
+        <p class="version-tech">Built with vanilla JavaScript and Web Audio API. Zero runtime dependencies.</p>
+      </div>
+      <div id="tab-license" class="tab-panel">
+        <h3>MIT License</h3>
+        <p>Copyright (c) 2026</p>
+        <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+        <p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+        <p class="license-disclaimer">THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+      </div>
+      <div id="tab-changelog" class="tab-panel">
+        <div class="changelog-entry">
+          <h4>2026.01.28-4</h4>
+          <ul>
+            <li>Added info button with version, license, and changelog tabs</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <h4>2026.01.28-3</h4>
+          <ul>
+            <li>Added tap tempo button</li>
+            <li>Added PWA update notification</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <h4>2026.01.28-2</h4>
+          <ul>
+            <li>Full ADSR envelope support</li>
+            <li>Sound presets (Default, Click, Clave, Beep, Hi-Hat)</li>
+            <li>White noise synthesis</li>
+            <li>Scroll wheel support for sliders</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <h4>2026.01.28-1</h4>
+          <ul>
+            <li>Main beat volume slider</li>
+            <li>Unified volumes API</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <h4>2026.01.27-1</h4>
+          <ul>
+            <li>Independent subdivision volume sliders</li>
+            <li>Color themes</li>
+          </ul>
+        </div>
+        <div class="changelog-entry">
+          <h4>2026.01.26-1</h4>
+          <ul>
+            <li>±5 BPM buttons</li>
+            <li>Compound time signatures</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </dialog>
 

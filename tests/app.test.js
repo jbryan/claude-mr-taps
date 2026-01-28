@@ -93,13 +93,37 @@ function setupDOM() {
       <select id="subdivision-waveform"><option value="sine">Sine</option></select>
       <input type="number" id="subdivision-noise" value="0">
     </dialog>
+    <div id="update-banner" class="update-banner hidden">
+      <span>Update available</span>
+      <button id="update-btn" class="btn btn-update">Refresh</button>
+    </div>
+    <button id="info-btn">Info</button>
+    <dialog id="info-dialog">
+      <button id="info-close">X</button>
+      <div class="info-tabs">
+        <button class="tab-btn active" data-tab="version">Version</button>
+        <button class="tab-btn" data-tab="license">License</button>
+        <button class="tab-btn" data-tab="changelog">Changelog</button>
+      </div>
+      <div id="tab-version" class="tab-panel active">Version content</div>
+      <div id="tab-license" class="tab-panel">License content</div>
+      <div id="tab-changelog" class="tab-panel">Changelog content</div>
+    </dialog>
   `;
 
   // Mock dialog methods
-  const dialog = document.getElementById('settings-dialog');
-  dialog.showModal = jest.fn();
-  dialog.close = jest.fn();
-  Object.defineProperty(dialog, 'open', {
+  const settingsDialog = document.getElementById('settings-dialog');
+  settingsDialog.showModal = jest.fn();
+  settingsDialog.close = jest.fn();
+  Object.defineProperty(settingsDialog, 'open', {
+    get: jest.fn(() => false),
+    configurable: true,
+  });
+
+  const infoDialog = document.getElementById('info-dialog');
+  infoDialog.showModal = jest.fn();
+  infoDialog.close = jest.fn();
+  Object.defineProperty(infoDialog, 'open', {
     get: jest.fn(() => false),
     configurable: true,
   });
@@ -933,6 +957,88 @@ describe('App', () => {
 
       const soundPreset = document.getElementById('sound-preset');
       expect(soundPreset.value).toBe('beep');
+    });
+  });
+
+  describe('info dialog', () => {
+    test('info button opens dialog', async () => {
+      await import('../public/js/app.js');
+
+      const infoBtn = document.getElementById('info-btn');
+      const infoDialog = document.getElementById('info-dialog');
+
+      infoBtn.click();
+
+      expect(infoDialog.showModal).toHaveBeenCalled();
+    });
+
+    test('close button closes dialog', async () => {
+      await import('../public/js/app.js');
+
+      const infoClose = document.getElementById('info-close');
+      const infoDialog = document.getElementById('info-dialog');
+
+      infoClose.click();
+
+      expect(infoDialog.close).toHaveBeenCalled();
+    });
+
+    test('tab buttons switch active tab', async () => {
+      await import('../public/js/app.js');
+
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const licenseBtn = tabBtns[1];
+      const tabPanels = document.querySelectorAll('.tab-panel');
+
+      licenseBtn.click();
+
+      expect(licenseBtn.classList.contains('active')).toBe(true);
+      expect(tabBtns[0].classList.contains('active')).toBe(false);
+      expect(document.getElementById('tab-license').classList.contains('active')).toBe(true);
+      expect(document.getElementById('tab-version').classList.contains('active')).toBe(false);
+    });
+
+    test('clicking changelog tab shows changelog panel', async () => {
+      await import('../public/js/app.js');
+
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const changelogBtn = tabBtns[2];
+
+      changelogBtn.click();
+
+      expect(changelogBtn.classList.contains('active')).toBe(true);
+      expect(document.getElementById('tab-changelog').classList.contains('active')).toBe(true);
+    });
+
+    test('escape closes info dialog when open', async () => {
+      await import('../public/js/app.js');
+
+      const infoDialog = document.getElementById('info-dialog');
+      Object.defineProperty(infoDialog, 'open', {
+        get: () => true,
+        configurable: true,
+      });
+
+      const event = new KeyboardEvent('keydown', { code: 'Escape' });
+      document.dispatchEvent(event);
+
+      expect(infoDialog.close).toHaveBeenCalled();
+    });
+
+    test('spacebar does not toggle play when info dialog is open', async () => {
+      await import('../public/js/app.js');
+
+      const playBtn = document.getElementById('play-btn');
+      const infoDialog = document.getElementById('info-dialog');
+      Object.defineProperty(infoDialog, 'open', {
+        get: () => true,
+        configurable: true,
+      });
+
+      const event = new KeyboardEvent('keydown', { code: 'Space' });
+      document.dispatchEvent(event);
+
+      expect(playBtn.classList.contains('playing')).toBe(false);
     });
   });
 });
