@@ -477,8 +477,8 @@ describe('Metronome', () => {
 
   describe('soundSettings', () => {
     test('initializes with default sound settings', () => {
-      expect(metronome.soundSettings.accent.pitch).toBe(440);
-      expect(metronome.soundSettings.regular.pitch).toBe(880);
+      expect(metronome.soundSettings.accent.pitch).toBe(880);
+      expect(metronome.soundSettings.regular.pitch).toBe(440);
       expect(metronome.soundSettings.subdivision.pitch).toBe(660);
     });
 
@@ -526,7 +526,7 @@ describe('Metronome', () => {
     test('resetSoundSettings restores defaults', () => {
       metronome.setSoundSettings('accent', { pitch: 1000, decay: 0.2, waveform: 'sawtooth' });
       metronome.resetSoundSettings();
-      expect(metronome.soundSettings.accent.pitch).toBe(440);
+      expect(metronome.soundSettings.accent.pitch).toBe(880);
       expect(metronome.soundSettings.accent.decay).toBe(0.04);
       expect(metronome.soundSettings.accent.waveform).toBe('sine');
     });
@@ -534,7 +534,7 @@ describe('Metronome', () => {
     test('sound settings are independent between instances', () => {
       const metronome2 = new Metronome();
       metronome.setSoundSettings('accent', { pitch: 1000 });
-      expect(metronome2.soundSettings.accent.pitch).toBe(440);
+      expect(metronome2.soundSettings.accent.pitch).toBe(880);
     });
   });
 
@@ -545,6 +545,9 @@ describe('Metronome', () => {
       expect(Metronome.SOUND_PRESETS).toHaveProperty('clave');
       expect(Metronome.SOUND_PRESETS).toHaveProperty('beep');
       expect(Metronome.SOUND_PRESETS).toHaveProperty('hihat');
+      expect(Metronome.SOUND_PRESETS).toHaveProperty('woodblock');
+      expect(Metronome.SOUND_PRESETS).toHaveProperty('snare');
+      expect(Metronome.SOUND_PRESETS).toHaveProperty('tr808');
     });
 
     test('each preset has name and settings', () => {
@@ -560,7 +563,7 @@ describe('Metronome', () => {
 
     test('applySoundPreset applies preset settings', () => {
       metronome.applySoundPreset('click');
-      expect(metronome.soundSettings.accent.pitch).toBe(1000);
+      expect(metronome.soundSettings.accent.pitch).toBe(1500);
       expect(metronome.soundSettings.accent.waveform).toBe('square');
     });
 
@@ -571,7 +574,7 @@ describe('Metronome', () => {
     test('applySoundPreset creates independent copy', () => {
       metronome.applySoundPreset('click');
       metronome.setSoundSettings('accent', { pitch: 2000 });
-      expect(Metronome.SOUND_PRESETS.click.settings.accent.pitch).toBe(1000);
+      expect(Metronome.SOUND_PRESETS.click.settings.accent.pitch).toBe(1500);
     });
   });
 });

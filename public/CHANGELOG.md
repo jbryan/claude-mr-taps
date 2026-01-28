@@ -2,6 +2,22 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.01.28-8] - 2026-01-28
+
+### Added
+- New sound presets: Woodblock, Snare, and TR-808
+- Woodblock: hollow, resonant wood tone with quick attack
+- Snare: punchy attack with noisy snare rattle
+- TR-808: classic analog drum machine sounds (cowbell accent, toms for beats)
+
+### Changed
+- Accent beats now use higher pitch than regular beats across all presets
+- Default preset: accent 880Hz (was 440Hz), regular 440Hz (was 880Hz)
+- Click preset: accent 1500Hz (was 1000Hz), regular 1000Hz (was 1200Hz)
+- Clave preset: accent 1200Hz (was 800Hz), regular 800Hz (was 1000Hz)
+- Beep preset: accent 1760Hz (was 880Hz), regular 880Hz (was 1760Hz)
+- Hi-Hat preset: open hi-hat for accent with longer decay
+
 ## [2026.01.28-7] - 2026-01-28
 
 ### Changed

@@ -33,6 +33,7 @@ Object.defineProperty(navigator, 'serviceWorker', {
     addEventListener: jest.fn(),
   },
   writable: true,
+  configurable: true,
 });
 
 // Setup DOM before importing app.js
@@ -916,7 +917,7 @@ describe('App', () => {
       soundPreset.value = 'click';
       soundPreset.dispatchEvent(new Event('change'));
 
-      expect(accentPitch.value).toBe('1000');
+      expect(accentPitch.value).toBe('1500');
     });
 
     test('changing sound setting sets preset to custom', async () => {
@@ -1089,6 +1090,260 @@ describe('App', () => {
       document.dispatchEvent(event);
 
       expect(playBtn.classList.contains('playing')).toBe(false);
+    });
+
+    test('clicking info dialog backdrop closes dialog', async () => {
+      await import('../public/js/app.js');
+
+      const infoDialog = document.getElementById('info-dialog');
+
+      // Simulate clicking the dialog backdrop (target === dialog)
+      const clickEvent = new MouseEvent('click', { bubbles: true });
+      Object.defineProperty(clickEvent, 'target', { value: infoDialog });
+      infoDialog.dispatchEvent(clickEvent);
+
+      expect(infoDialog.close).toHaveBeenCalled();
+    });
+
+    test('handles fetch error for version.json gracefully', async () => {
+      // Override fetch to reject for version.json
+      global.fetch = jest.fn((url) => {
+        if (url.includes('version.json')) {
+          return Promise.reject(new Error('Network error'));
+        }
+        if (url.includes('CHANGELOG.md')) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve('# Changelog\n\n## [1.0.0]\n\n### Added\n- Test'),
+          });
+        }
+        return Promise.reject(new Error('Unknown URL'));
+      });
+
+      const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      await import('../public/js/app.js');
+
+      const infoBtn = document.getElementById('info-btn');
+      infoBtn.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(consoleWarn).toHaveBeenCalledWith('Could not load version:', expect.any(Error));
+      consoleWarn.mockRestore();
+    });
+
+    test('handles fetch error for CHANGELOG.md gracefully', async () => {
+      // Override fetch to reject for CHANGELOG.md
+      global.fetch = jest.fn((url) => {
+        if (url.includes('version.json')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ version: '1.0.0' }),
+          });
+        }
+        if (url.includes('CHANGELOG.md')) {
+          return Promise.reject(new Error('Network error'));
+        }
+        return Promise.reject(new Error('Unknown URL'));
+      });
+
+      const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      await import('../public/js/app.js');
+
+      const infoBtn = document.getElementById('info-btn');
+      infoBtn.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(consoleWarn).toHaveBeenCalledWith('Could not load changelog:', expect.any(Error));
+      consoleWarn.mockRestore();
+    });
+
+    test('parses changelog with multiple versions and nested items', async () => {
+      global.fetch = jest.fn((url) => {
+        if (url.includes('version.json')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ version: '2.0.0' }),
+          });
+        }
+        if (url.includes('CHANGELOG.md')) {
+          return Promise.resolve({
+            ok: true,
+            text: () => Promise.resolve(`# Changelog
+
+All notable changes documented here.
+
+## [2.0.0] - 2026-01-28
+
+### Added
+- Feature one
+  - Sub-feature A
+  - Sub-feature B
+- Feature two
+
+### Changed
+- Changed something
+
+## [1.0.0] - 2026-01-27
+
+### Added
+- Initial release`),
+          });
+        }
+        return Promise.reject(new Error('Unknown URL'));
+      });
+
+      await import('../public/js/app.js');
+
+      const infoBtn = document.getElementById('info-btn');
+      infoBtn.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      const changelogPanel = document.getElementById('tab-changelog');
+      expect(changelogPanel.innerHTML).toContain('2.0.0');
+      expect(changelogPanel.innerHTML).toContain('1.0.0');
+      expect(changelogPanel.innerHTML).toContain('Feature one');
+      expect(changelogPanel.innerHTML).toContain('Sub-feature A');
+      expect(changelogPanel.innerHTML).toContain('Initial release');
+    });
+  });
+
+  describe('dialog backdrop clicks', () => {
+    test('clicking settings dialog backdrop closes dialog', async () => {
+      await import('../public/js/app.js');
+
+      const settingsDialog = document.getElementById('settings-dialog');
+
+      // Simulate clicking the dialog backdrop (target === dialog)
+      const clickEvent = new MouseEvent('click', { bubbles: true });
+      Object.defineProperty(clickEvent, 'target', { value: settingsDialog });
+      settingsDialog.dispatchEvent(clickEvent);
+
+      expect(settingsDialog.close).toHaveBeenCalled();
+    });
+  });
+
+  describe('tap tempo edge cases', () => {
+    test('tap tempo trims to 4 samples when more taps occur', async () => {
+      jest.useFakeTimers();
+      await import('../public/js/app.js');
+
+      const tapTempoBtn = document.getElementById('tap-tempo');
+      const bpmValue = document.getElementById('bpm-value');
+
+      // Tap 6 times at 500ms intervals (should keep only last 4)
+      for (let i = 0; i < 6; i++) {
+        tapTempoBtn.click();
+        if (i < 5) jest.advanceTimersByTime(500);
+      }
+
+      // Should still calculate ~120 BPM from last 4 taps
+      expect(bpmValue.textContent).toBe('120');
+
+      jest.useRealTimers();
+    });
+  });
+
+  describe('localStorage error handling', () => {
+    test('handles localStorage.setItem error gracefully', async () => {
+      const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Make localStorage.setItem throw
+      const originalSetItem = localStorageMock.setItem;
+      localStorageMock.setItem = () => {
+        throw new Error('QuotaExceededError');
+      };
+
+      await import('../public/js/app.js');
+
+      const tempoSlider = document.getElementById('tempo-slider');
+      tempoSlider.value = '150';
+      tempoSlider.dispatchEvent(new Event('input'));
+
+      expect(consoleWarn).toHaveBeenCalledWith(
+        'Could not save settings to localStorage:',
+        expect.any(Error)
+      );
+
+      localStorageMock.setItem = originalSetItem;
+      consoleWarn.mockRestore();
+    });
+
+    test('handles localStorage.getItem error gracefully', async () => {
+      const consoleWarn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      // Make localStorage.getItem throw
+      const originalGetItem = localStorageMock.getItem;
+      localStorageMock.getItem = () => {
+        throw new Error('SecurityError');
+      };
+
+      await import('../public/js/app.js');
+
+      expect(consoleWarn).toHaveBeenCalledWith(
+        'Could not load settings from localStorage:',
+        expect.any(Error)
+      );
+
+      localStorageMock.getItem = originalGetItem;
+      consoleWarn.mockRestore();
+    });
+  });
+
+  describe('service worker update scenarios', () => {
+    test('shows update banner when registration has waiting worker', async () => {
+      // Override serviceWorker mock to have a waiting worker
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: {
+          register: () => Promise.resolve({
+            scope: '/',
+            waiting: { postMessage: jest.fn() },
+            installing: null,
+            addEventListener: jest.fn(),
+          }),
+          addEventListener: jest.fn(),
+        },
+        writable: true,
+        configurable: true,
+      });
+
+      await import('../public/js/app.js');
+
+      // Trigger the load event
+      window.dispatchEvent(new Event('load'));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      const updateBanner = document.getElementById('update-banner');
+      expect(updateBanner.classList.contains('hidden')).toBe(false);
+    });
+
+    test('update button posts message to waiting worker', async () => {
+      const mockPostMessage = jest.fn();
+
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: {
+          register: () => Promise.resolve({
+            scope: '/',
+            waiting: { postMessage: mockPostMessage },
+            installing: null,
+            addEventListener: jest.fn(),
+          }),
+          addEventListener: jest.fn(),
+        },
+        writable: true,
+        configurable: true,
+      });
+
+      await import('../public/js/app.js');
+
+      window.dispatchEvent(new Event('load'));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      const updateBtn = document.getElementById('update-btn');
+      updateBtn.click();
+
+      expect(mockPostMessage).toHaveBeenCalledWith({ type: 'SKIP_WAITING' });
     });
   });
 });

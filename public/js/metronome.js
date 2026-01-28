@@ -14,50 +14,77 @@ export class Metronome {
   };
   static WAVEFORMS = ['sine', 'square', 'triangle', 'sawtooth'];
   static DEFAULT_SOUND_SETTINGS = {
-    accent: { pitch: 440, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 1.0, noise: 0 },
-    regular: { pitch: 880, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 0.7, noise: 0 },
+    accent: { pitch: 880, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 1.0, noise: 0 },
+    regular: { pitch: 440, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 0.7, noise: 0 },
     subdivision: { pitch: 660, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 0.3, noise: 0 },
   };
   static SOUND_PRESETS = {
     default: {
       name: 'Default',
       settings: {
-        accent: { pitch: 440, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 1.0, noise: 0 },
-        regular: { pitch: 880, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 0.7, noise: 0 },
+        accent: { pitch: 880, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 1.0, noise: 0 },
+        regular: { pitch: 440, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 0.7, noise: 0 },
         subdivision: { pitch: 660, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 0.3, noise: 0 },
       },
     },
     click: {
       name: 'Click',
       settings: {
-        accent: { pitch: 1000, attack: 0.001, decay: 0.02, sustain: 0, release: 0.01, waveform: 'square', gain: 1.0, noise: 0 },
-        regular: { pitch: 1200, attack: 0.001, decay: 0.015, sustain: 0, release: 0.01, waveform: 'square', gain: 0.7, noise: 0 },
-        subdivision: { pitch: 1500, attack: 0.001, decay: 0.01, sustain: 0, release: 0.005, waveform: 'square', gain: 0.3, noise: 0 },
+        accent: { pitch: 1500, attack: 0.001, decay: 0.02, sustain: 0, release: 0.01, waveform: 'square', gain: 1.0, noise: 0 },
+        regular: { pitch: 1000, attack: 0.001, decay: 0.015, sustain: 0, release: 0.01, waveform: 'square', gain: 0.7, noise: 0 },
+        subdivision: { pitch: 1200, attack: 0.001, decay: 0.01, sustain: 0, release: 0.005, waveform: 'square', gain: 0.3, noise: 0 },
       },
     },
     clave: {
       name: 'Clave',
       settings: {
-        accent: { pitch: 800, attack: 0.002, decay: 0.06, sustain: 0.2, release: 0.08, waveform: 'triangle', gain: 1.0, noise: 0 },
-        regular: { pitch: 1000, attack: 0.002, decay: 0.05, sustain: 0.15, release: 0.06, waveform: 'triangle', gain: 0.7, noise: 0 },
-        subdivision: { pitch: 1200, attack: 0.002, decay: 0.04, sustain: 0.1, release: 0.04, waveform: 'triangle', gain: 0.3, noise: 0 },
+        accent: { pitch: 1200, attack: 0.002, decay: 0.06, sustain: 0.2, release: 0.08, waveform: 'triangle', gain: 1.0, noise: 0 },
+        regular: { pitch: 800, attack: 0.002, decay: 0.05, sustain: 0.15, release: 0.06, waveform: 'triangle', gain: 0.7, noise: 0 },
+        subdivision: { pitch: 1000, attack: 0.002, decay: 0.04, sustain: 0.1, release: 0.04, waveform: 'triangle', gain: 0.3, noise: 0 },
       },
     },
     beep: {
       name: 'Beep',
       settings: {
-        accent: { pitch: 880, attack: 0.01, decay: 0.05, sustain: 0.8, release: 0.05, waveform: 'sine', gain: 1.0, noise: 0 },
-        regular: { pitch: 1760, attack: 0.01, decay: 0.04, sustain: 0.7, release: 0.04, waveform: 'sine', gain: 0.7, noise: 0 },
+        accent: { pitch: 1760, attack: 0.01, decay: 0.05, sustain: 0.8, release: 0.05, waveform: 'sine', gain: 1.0, noise: 0 },
+        regular: { pitch: 880, attack: 0.01, decay: 0.04, sustain: 0.7, release: 0.04, waveform: 'sine', gain: 0.7, noise: 0 },
         subdivision: { pitch: 1320, attack: 0.01, decay: 0.03, sustain: 0.6, release: 0.03, waveform: 'sine', gain: 0.3, noise: 0 },
       },
     },
     hihat: {
       name: 'Hi-Hat',
       settings: {
-        // Hi-hat: noise-dominant with metallic high frequencies, instant attack, fast decay
-        accent: { pitch: 6000, attack: 0.001, decay: 0.04, sustain: 0, release: 0.03, waveform: 'square', gain: 0.8, noise: 0.9 },
+        // Open hi-hat for accent (longer decay), closed for regular
+        accent: { pitch: 10000, attack: 0.001, decay: 0.08, sustain: 0, release: 0.05, waveform: 'square', gain: 0.8, noise: 0.9 },
         regular: { pitch: 8000, attack: 0.001, decay: 0.03, sustain: 0, release: 0.02, waveform: 'square', gain: 0.6, noise: 0.9 },
-        subdivision: { pitch: 10000, attack: 0.001, decay: 0.02, sustain: 0, release: 0.015, waveform: 'square', gain: 0.3, noise: 0.9 },
+        subdivision: { pitch: 9000, attack: 0.001, decay: 0.02, sustain: 0, release: 0.015, waveform: 'square', gain: 0.3, noise: 0.9 },
+      },
+    },
+    woodblock: {
+      name: 'Woodblock',
+      settings: {
+        // Hollow, resonant wood tone with quick attack
+        accent: { pitch: 900, attack: 0.001, decay: 0.08, sustain: 0.1, release: 0.1, waveform: 'triangle', gain: 1.0, noise: 0.1 },
+        regular: { pitch: 700, attack: 0.001, decay: 0.06, sustain: 0.1, release: 0.08, waveform: 'triangle', gain: 0.7, noise: 0.1 },
+        subdivision: { pitch: 800, attack: 0.001, decay: 0.04, sustain: 0.05, release: 0.05, waveform: 'triangle', gain: 0.3, noise: 0.1 },
+      },
+    },
+    snare: {
+      name: 'Snare',
+      settings: {
+        // Punchy attack with noisy snare rattle
+        accent: { pitch: 250, attack: 0.001, decay: 0.1, sustain: 0.1, release: 0.15, waveform: 'triangle', gain: 1.0, noise: 0.7 },
+        regular: { pitch: 200, attack: 0.001, decay: 0.08, sustain: 0.1, release: 0.1, waveform: 'triangle', gain: 0.7, noise: 0.7 },
+        subdivision: { pitch: 180, attack: 0.001, decay: 0.05, sustain: 0.05, release: 0.08, waveform: 'triangle', gain: 0.4, noise: 0.6 },
+      },
+    },
+    tr808: {
+      name: 'TR-808',
+      settings: {
+        // Classic analog drum machine - cowbell accent, toms for beats
+        accent: { pitch: 800, attack: 0.001, decay: 0.15, sustain: 0.3, release: 0.1, waveform: 'square', gain: 0.9, noise: 0 },
+        regular: { pitch: 300, attack: 0.001, decay: 0.12, sustain: 0.2, release: 0.08, waveform: 'sine', gain: 0.8, noise: 0 },
+        subdivision: { pitch: 500, attack: 0.001, decay: 0.06, sustain: 0.1, release: 0.05, waveform: 'sine', gain: 0.4, noise: 0 },
       },
     },
   };
