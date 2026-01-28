@@ -5,4 +5,8 @@ export default {
   moduleFileExtensions: ['js'],
   transform: {},
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
+  collectCoverage: true,
+  collectCoverageFrom: ['public/js/**/*.js'],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'html'],
 };

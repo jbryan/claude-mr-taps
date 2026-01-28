@@ -2,6 +2,20 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.01.28-1] - 2026-01-28
+
+### Added
+- Main beat volume slider (0-100%, defaults to 100%)
+- Code coverage reporting in test runner (text and HTML reports)
+- Comprehensive test suite for app.js (previously untested)
+
+### Changed
+- Refactored `beatVolume` and `subdivisionVolumes` into unified `volumes` object
+- New `setVolume(type, value)` and `resetVolumes()` methods replace type-specific methods
+- Volume types: 'beat', 'eighth', 'sixteenth', 'triplet' (all 0-1 range)
+- Test coverage now at 83.92% branches for app.js and 93.54% for metronome.js
+- Total test count increased from 47 to 104 tests
+
 ## [2026.01.27-1] - 2026-01-27
 
 ### Added

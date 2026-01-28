@@ -9,7 +9,7 @@ Mr. Taps is a vanilla JavaScript PWA metronome application using the Web Audio A
 ## Commands
 
 ```bash
-npm test              # Run Jest test suite (45 tests)
+npm test              # Run Jest test suite (104 tests) with coverage report
 npm start             # Serve public/ directory at http://localhost:3000
 npm run generate-icons # Regenerate PWA icons (requires Canvas library)
 ```
@@ -28,7 +28,8 @@ No lint or build commands - source files are served directly.
 - Three beat types with independent sound settings: accent (first beat), regular, subdivision
 - Percussive envelope: 5ms attack, configurable decay with exponential gain ramping
 - Default frequencies: 440Hz accent, 880Hz regular, 660Hz subdivision
-- Subdivision volumes (`subdivisionVolumes`): independent 0-1 volumes for eighth, sixteenth, and triplet
+- Unified `volumes` object with `setVolume(type, value)` method for all volume types
+- Volume types: 'beat' (main beat, default 1.0), 'eighth', 'sixteenth', 'triplet' (subdivisions, default 0)
 - All subdivision types can play simultaneously at different volumes
 
 **Compound time signatures:**
@@ -42,7 +43,9 @@ All settings (BPM, beats per measure, secondary beats, subdivision volumes, soun
 
 ## Testing
 
-Tests are in `tests/metronome.test.js` with Web Audio API mocks defined in `tests/setup.js`. The mock implements AudioContext, OscillatorNode, and GainNode with all methods used by the Metronome class.
+Tests are in `tests/metronome.test.js` (core audio logic) and `tests/app.test.js` (UI layer) with Web Audio API mocks defined in `tests/setup.js`. The mock implements AudioContext, OscillatorNode, and GainNode with all methods used by the Metronome class.
+
+Coverage: 83.92% branches for app.js, 93.54% branches for metronome.js. HTML coverage report generated in `coverage/` directory.
 
 Run a specific test:
 ```bash
@@ -54,6 +57,6 @@ npm test -- --testNamePattern="pattern"
 - BPM range: 1-300 (validated in `setTempo`)
 - Beats per measure: 1-20 (validated in `setBeatsPerMeasure`)
 - Secondary beats: null (disabled) or 1-20 (validated in `setSecondaryBeatsPerMeasure`)
-- Subdivision volumes: 0-1 for each type (eighth, sixteenth, triplet), clamped in `setSubdivisionVolume`
+- Volumes: 0-1 for each type (beat, eighth, sixteenth, triplet), clamped in `setVolume`
 - Waveform options: sine, square, triangle, sawtooth
 - Theme options: default, black, light

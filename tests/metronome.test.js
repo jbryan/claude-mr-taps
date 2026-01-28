@@ -15,7 +15,7 @@ describe('Metronome', () => {
     test('initializes with default values', () => {
       expect(metronome.bpm).toBe(120);
       expect(metronome.beatsPerMeasure).toBe(4);
-      expect(metronome.subdivisionVolumes).toEqual({ eighth: 0, sixteenth: 0, triplet: 0 });
+      expect(metronome.volumes).toEqual({ beat: 1.0, eighth: 0, sixteenth: 0, triplet: 0 });
       expect(metronome.isPlaying).toBe(false);
     });
 
@@ -99,36 +99,116 @@ describe('Metronome', () => {
     });
   });
 
-  describe('setSubdivisionVolume', () => {
-    test('sets valid subdivision volumes', () => {
-      metronome.setSubdivisionVolume('eighth', 0.5);
-      expect(metronome.subdivisionVolumes.eighth).toBe(0.5);
+  describe('setSecondaryBeatsPerMeasure', () => {
+    test('sets valid secondary beats', () => {
+      metronome.setSecondaryBeatsPerMeasure(3);
+      expect(metronome.secondaryBeatsPerMeasure).toBe(3);
 
-      metronome.setSubdivisionVolume('sixteenth', 0.75);
-      expect(metronome.subdivisionVolumes.sixteenth).toBe(0.75);
+      metronome.setSecondaryBeatsPerMeasure(7);
+      expect(metronome.secondaryBeatsPerMeasure).toBe(7);
+    });
 
-      metronome.setSubdivisionVolume('triplet', 1.0);
-      expect(metronome.subdivisionVolumes.triplet).toBe(1.0);
+    test('accepts minimum beats (1)', () => {
+      metronome.setSecondaryBeatsPerMeasure(1);
+      expect(metronome.secondaryBeatsPerMeasure).toBe(1);
+    });
+
+    test('accepts maximum beats (20)', () => {
+      metronome.setSecondaryBeatsPerMeasure(20);
+      expect(metronome.secondaryBeatsPerMeasure).toBe(20);
+    });
+
+    test('rounds floating point values', () => {
+      metronome.setSecondaryBeatsPerMeasure(4.6);
+      expect(metronome.secondaryBeatsPerMeasure).toBe(5);
+    });
+
+    test('sets null to disable', () => {
+      metronome.setSecondaryBeatsPerMeasure(5);
+      metronome.setSecondaryBeatsPerMeasure(null);
+      expect(metronome.secondaryBeatsPerMeasure).toBe(null);
+    });
+
+    test('sets 0 to disable', () => {
+      metronome.setSecondaryBeatsPerMeasure(5);
+      metronome.setSecondaryBeatsPerMeasure(0);
+      expect(metronome.secondaryBeatsPerMeasure).toBe(null);
+    });
+
+    test('resets currentMeasure and currentBeat when disabled', () => {
+      metronome.setSecondaryBeatsPerMeasure(4);
+      metronome.currentMeasure = 1;
+      metronome.currentBeat = 3;
+      metronome.setSecondaryBeatsPerMeasure(null);
+      expect(metronome.currentMeasure).toBe(0);
+      expect(metronome.currentBeat).toBe(0);
+    });
+
+    test('throws error for beats below minimum', () => {
+      expect(() => metronome.setSecondaryBeatsPerMeasure(-1)).toThrow(RangeError);
+    });
+
+    test('throws error for beats above maximum', () => {
+      expect(() => metronome.setSecondaryBeatsPerMeasure(21)).toThrow(RangeError);
+      expect(() => metronome.setSecondaryBeatsPerMeasure(100)).toThrow(RangeError);
+    });
+  });
+
+  describe('currentBeatsPerMeasure', () => {
+    test('returns primary beats when secondary is null', () => {
+      metronome.setBeatsPerMeasure(4);
+      expect(metronome.currentBeatsPerMeasure).toBe(4);
+    });
+
+    test('returns primary beats when in measure 0', () => {
+      metronome.setBeatsPerMeasure(3);
+      metronome.setSecondaryBeatsPerMeasure(4);
+      metronome.currentMeasure = 0;
+      expect(metronome.currentBeatsPerMeasure).toBe(3);
+    });
+
+    test('returns secondary beats when in measure 1', () => {
+      metronome.setBeatsPerMeasure(3);
+      metronome.setSecondaryBeatsPerMeasure(4);
+      metronome.currentMeasure = 1;
+      expect(metronome.currentBeatsPerMeasure).toBe(4);
+    });
+  });
+
+  describe('setVolume', () => {
+    test('sets valid volumes', () => {
+      metronome.setVolume('beat', 0.5);
+      expect(metronome.volumes.beat).toBe(0.5);
+
+      metronome.setVolume('eighth', 0.5);
+      expect(metronome.volumes.eighth).toBe(0.5);
+
+      metronome.setVolume('sixteenth', 0.75);
+      expect(metronome.volumes.sixteenth).toBe(0.75);
+
+      metronome.setVolume('triplet', 1.0);
+      expect(metronome.volumes.triplet).toBe(1.0);
     });
 
     test('clamps volume to 0-1 range', () => {
-      metronome.setSubdivisionVolume('eighth', 1.5);
-      expect(metronome.subdivisionVolumes.eighth).toBe(1);
+      metronome.setVolume('eighth', 1.5);
+      expect(metronome.volumes.eighth).toBe(1);
 
-      metronome.setSubdivisionVolume('eighth', -0.5);
-      expect(metronome.subdivisionVolumes.eighth).toBe(0);
+      metronome.setVolume('eighth', -0.5);
+      expect(metronome.volumes.eighth).toBe(0);
     });
 
-    test('throws error for invalid subdivision type', () => {
-      expect(() => metronome.setSubdivisionVolume('invalid', 0.5)).toThrow(RangeError);
+    test('throws error for invalid volume type', () => {
+      expect(() => metronome.setVolume('invalid', 0.5)).toThrow(RangeError);
     });
 
-    test('resetSubdivisionVolumes restores defaults', () => {
-      metronome.setSubdivisionVolume('eighth', 0.8);
-      metronome.setSubdivisionVolume('sixteenth', 0.6);
-      metronome.setSubdivisionVolume('triplet', 0.4);
-      metronome.resetSubdivisionVolumes();
-      expect(metronome.subdivisionVolumes).toEqual({ eighth: 0, sixteenth: 0, triplet: 0 });
+    test('resetVolumes restores defaults', () => {
+      metronome.setVolume('beat', 0.5);
+      metronome.setVolume('eighth', 0.8);
+      metronome.setVolume('sixteenth', 0.6);
+      metronome.setVolume('triplet', 0.4);
+      metronome.resetVolumes();
+      expect(metronome.volumes).toEqual({ beat: 1.0, eighth: 0, sixteenth: 0, triplet: 0 });
     });
   });
 
@@ -241,10 +321,11 @@ describe('Metronome', () => {
       expect(Metronome.MAX_BEATS).toBe(20);
     });
 
-    test('DEFAULT_SUBDIVISION_VOLUMES has correct values', () => {
-      expect(Metronome.DEFAULT_SUBDIVISION_VOLUMES.eighth).toBe(0);
-      expect(Metronome.DEFAULT_SUBDIVISION_VOLUMES.sixteenth).toBe(0);
-      expect(Metronome.DEFAULT_SUBDIVISION_VOLUMES.triplet).toBe(0);
+    test('DEFAULT_VOLUMES has correct values', () => {
+      expect(Metronome.DEFAULT_VOLUMES.beat).toBe(1.0);
+      expect(Metronome.DEFAULT_VOLUMES.eighth).toBe(0);
+      expect(Metronome.DEFAULT_VOLUMES.sixteenth).toBe(0);
+      expect(Metronome.DEFAULT_VOLUMES.triplet).toBe(0);
     });
 
     test('WAVEFORMS has correct values', () => {
@@ -258,6 +339,94 @@ describe('Metronome', () => {
       expect(Metronome.DEFAULT_SOUND_SETTINGS).toHaveProperty('accent');
       expect(Metronome.DEFAULT_SOUND_SETTINGS).toHaveProperty('regular');
       expect(Metronome.DEFAULT_SOUND_SETTINGS).toHaveProperty('subdivision');
+    });
+  });
+
+  describe('playBeep', () => {
+    test('plays accent beat without throwing', () => {
+      expect(() => metronome.playBeep(0, true, false)).not.toThrow();
+    });
+
+    test('plays regular beat without throwing', () => {
+      expect(() => metronome.playBeep(0, false, false)).not.toThrow();
+    });
+
+    test('plays subdivision beat without throwing', () => {
+      expect(() => metronome.playBeep(0, false, true)).not.toThrow();
+    });
+
+    test('applies gain multiplier without throwing', () => {
+      expect(() => metronome.playBeep(0, false, false, 0.5)).not.toThrow();
+    });
+
+    test('handles very low gain multiplier', () => {
+      expect(() => metronome.playBeep(0, false, false, 0.001)).not.toThrow();
+    });
+  });
+
+  describe('scheduleNote with subdivisions', () => {
+    test('schedules eighth note subdivisions when volume > 0', () => {
+      metronome.setVolume('eighth', 0.5);
+      expect(() => metronome.scheduleNote()).not.toThrow();
+    });
+
+    test('schedules sixteenth note subdivisions when volume > 0', () => {
+      metronome.setVolume('sixteenth', 0.5);
+      expect(() => metronome.scheduleNote()).not.toThrow();
+    });
+
+    test('schedules triplet subdivisions when volume > 0', () => {
+      metronome.setVolume('triplet', 0.5);
+      expect(() => metronome.scheduleNote()).not.toThrow();
+    });
+
+    test('handles all subdivisions enabled at once', () => {
+      metronome.setVolume('eighth', 0.5);
+      metronome.setVolume('sixteenth', 0.5);
+      metronome.setVolume('triplet', 0.5);
+      expect(() => metronome.scheduleNote()).not.toThrow();
+    });
+
+    test('does not throw when beat volume is 0', () => {
+      metronome.setVolume('beat', 0);
+      expect(() => metronome.scheduleNote()).not.toThrow();
+    });
+
+    test('alternates measures when secondary beats is set', () => {
+      metronome.setBeatsPerMeasure(2);
+      metronome.setSecondaryBeatsPerMeasure(3);
+
+      // Manually simulate beats to test alternation
+      metronome.currentBeat = 0;
+      metronome.currentMeasure = 0;
+
+      // First beat
+      metronome.scheduleNote();
+      expect(metronome.currentBeat).toBe(1);
+      expect(metronome.currentMeasure).toBe(0);
+
+      // Second beat (end of first measure)
+      metronome.scheduleNote();
+      expect(metronome.currentBeat).toBe(0);
+      expect(metronome.currentMeasure).toBe(1); // Should switch to secondary
+
+      // Continue through secondary measure (3 beats)
+      metronome.scheduleNote(); // beat 1
+      metronome.scheduleNote(); // beat 2
+      metronome.scheduleNote(); // beat 3 -> wraps
+      expect(metronome.currentBeat).toBe(0);
+      expect(metronome.currentMeasure).toBe(0); // Should switch back to primary
+    });
+  });
+
+  describe('audioContext state', () => {
+    test('handles suspended audioContext on start', () => {
+      const suspendedContext = new AudioContext();
+      suspendedContext.state = 'suspended';
+
+      const testMetronome = new Metronome(suspendedContext);
+      expect(() => testMetronome.start()).not.toThrow();
+      testMetronome.stop();
     });
   });
 

@@ -14,13 +14,15 @@ const beatsSelect = document.getElementById('beats-select');
 const secondaryBeatsSelect = document.getElementById('secondary-beats-select');
 const playBtn = document.getElementById('play-btn');
 
-// Subdivision volume sliders
-const subdivisionSliders = {
+// Volume sliders
+const volumeSliders = {
+  beat: document.getElementById('beat-volume'),
   eighth: document.getElementById('eighth-volume'),
   sixteenth: document.getElementById('sixteenth-volume'),
   triplet: document.getElementById('triplet-volume'),
 };
-const subdivisionValues = {
+const volumeDisplays = {
+  beat: document.getElementById('beat-value'),
   eighth: document.getElementById('eighth-value'),
   sixteenth: document.getElementById('sixteenth-value'),
   triplet: document.getElementById('triplet-value'),
@@ -73,7 +75,7 @@ function saveSettings() {
     bpm: metronome.bpm,
     beatsPerMeasure: metronome.beatsPerMeasure,
     secondaryBeatsPerMeasure: metronome.secondaryBeatsPerMeasure,
-    subdivisionVolumes: metronome.subdivisionVolumes,
+    volumes: metronome.volumes,
     soundSettings: metronome.soundSettings,
     theme: currentTheme,
   };
@@ -100,10 +102,10 @@ function loadSettings() {
       if (settings.secondaryBeatsPerMeasure !== undefined) {
         metronome.setSecondaryBeatsPerMeasure(settings.secondaryBeatsPerMeasure);
       }
-      if (settings.subdivisionVolumes) {
-        for (const type of ['eighth', 'sixteenth', 'triplet']) {
-          if (settings.subdivisionVolumes[type] !== undefined) {
-            metronome.setSubdivisionVolume(type, settings.subdivisionVolumes[type]);
+      if (settings.volumes) {
+        for (const type of ['beat', 'eighth', 'sixteenth', 'triplet']) {
+          if (settings.volumes[type] !== undefined) {
+            metronome.setVolume(type, settings.volumes[type]);
           }
         }
       }
@@ -152,11 +154,11 @@ function initUI() {
   beatsSelect.value = metronome.beatsPerMeasure;
   secondaryBeatsSelect.value = metronome.secondaryBeatsPerMeasure || 0;
 
-  // Set subdivision volume sliders
-  for (const type of ['eighth', 'sixteenth', 'triplet']) {
-    const volumePercent = Math.round(metronome.subdivisionVolumes[type] * 100);
-    subdivisionSliders[type].value = volumePercent;
-    subdivisionValues[type].textContent = `${volumePercent}%`;
+  // Set volume sliders
+  for (const type of ['beat', 'eighth', 'sixteenth', 'triplet']) {
+    const volumePercent = Math.round(metronome.volumes[type] * 100);
+    volumeSliders[type].value = volumePercent;
+    volumeDisplays[type].textContent = `${volumePercent}%`;
   }
 
   // Create beat indicators
@@ -282,12 +284,12 @@ secondaryBeatsSelect.addEventListener('change', (e) => {
   saveSettings();
 });
 
-// Subdivision volume slider event listeners
-for (const type of ['eighth', 'sixteenth', 'triplet']) {
-  subdivisionSliders[type].addEventListener('input', (e) => {
+// Volume slider event listeners
+for (const type of ['beat', 'eighth', 'sixteenth', 'triplet']) {
+  volumeSliders[type].addEventListener('input', (e) => {
     const volumePercent = parseInt(e.target.value, 10);
-    metronome.setSubdivisionVolume(type, volumePercent / 100);
-    subdivisionValues[type].textContent = `${volumePercent}%`;
+    metronome.setVolume(type, volumePercent / 100);
+    volumeDisplays[type].textContent = `${volumePercent}%`;
     saveSettings();
   });
 }
@@ -358,12 +360,13 @@ settingsDialog.addEventListener('click', (e) => {
 
 settingsReset.addEventListener('click', () => {
   metronome.resetSoundSettings();
-  metronome.resetSubdivisionVolumes();
+  metronome.resetVolumes();
   applyTheme('default');
-  // Reset subdivision sliders in UI
-  for (const type of ['eighth', 'sixteenth', 'triplet']) {
-    subdivisionSliders[type].value = 0;
-    subdivisionValues[type].textContent = '0%';
+  // Reset volume sliders in UI
+  for (const type of ['beat', 'eighth', 'sixteenth', 'triplet']) {
+    const defaultVolume = Metronome.DEFAULT_VOLUMES[type];
+    volumeSliders[type].value = Math.round(defaultVolume * 100);
+    volumeDisplays[type].textContent = `${Math.round(defaultVolume * 100)}%`;
   }
   updateSettingsUI();
   saveSettings();

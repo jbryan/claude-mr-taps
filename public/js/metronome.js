@@ -6,7 +6,8 @@ export class Metronome {
   static MAX_BPM = 300;
   static MIN_BEATS = 1;
   static MAX_BEATS = 20;
-  static DEFAULT_SUBDIVISION_VOLUMES = {
+  static DEFAULT_VOLUMES = {
+    beat: 1.0,    // Main beat volume
     eighth: 0,    // The "&" (50% through beat)
     sixteenth: 0, // The "e" and "a" (25% and 75% through beat)
     triplet: 0,   // Triplet subdivisions (33% and 66% through beat)
@@ -23,7 +24,7 @@ export class Metronome {
     this.bpm = 120;
     this.beatsPerMeasure = 4;
     this.secondaryBeatsPerMeasure = null; // null = disabled, 1-20 = enabled
-    this.subdivisionVolumes = { ...Metronome.DEFAULT_SUBDIVISION_VOLUMES };
+    this.volumes = { ...Metronome.DEFAULT_VOLUMES };
     this.isPlaying = false;
     this.currentBeat = 0;
     this.currentMeasure = 0; // 0 = primary, 1 = secondary
@@ -97,22 +98,22 @@ export class Metronome {
   }
 
   /**
-   * Set the volume for a subdivision type
-   * @param {string} type - 'eighth', 'sixteenth', or 'triplet'
+   * Set the volume for a specific type
+   * @param {string} type - 'beat', 'eighth', 'sixteenth', or 'triplet'
    * @param {number} volume - Volume from 0 to 1
    */
-  setSubdivisionVolume(type, volume) {
-    if (!(type in this.subdivisionVolumes)) {
-      throw new RangeError(`Invalid subdivision type: ${type}. Must be 'eighth', 'sixteenth', or 'triplet'`);
+  setVolume(type, volume) {
+    if (!(type in this.volumes)) {
+      throw new RangeError(`Invalid volume type: ${type}. Must be 'beat', 'eighth', 'sixteenth', or 'triplet'`);
     }
-    this.subdivisionVolumes[type] = Math.max(0, Math.min(1, volume));
+    this.volumes[type] = Math.max(0, Math.min(1, volume));
   }
 
   /**
-   * Reset subdivision volumes to defaults (all zero)
+   * Reset all volumes to defaults
    */
-  resetSubdivisionVolumes() {
-    this.subdivisionVolumes = { ...Metronome.DEFAULT_SUBDIVISION_VOLUMES };
+  resetVolumes() {
+    this.volumes = { ...Metronome.DEFAULT_VOLUMES };
   }
 
   /**
@@ -187,23 +188,25 @@ export class Metronome {
     const interval = this.beatInterval;
 
     // Play the main beat
-    this.playBeep(beatTime, isFirstBeat, false);
+    if (this.volumes.beat > 0) {
+      this.playBeep(beatTime, isFirstBeat, false, this.volumes.beat);
+    }
 
     // Schedule eighth note subdivision (&) at 50% through the beat
-    if (this.subdivisionVolumes.eighth > 0) {
-      this.playBeep(beatTime + interval * 0.5, false, true, this.subdivisionVolumes.eighth);
+    if (this.volumes.eighth > 0) {
+      this.playBeep(beatTime + interval * 0.5, false, true, this.volumes.eighth);
     }
 
     // Schedule sixteenth note subdivisions (e and a) at 25% and 75% through the beat
-    if (this.subdivisionVolumes.sixteenth > 0) {
-      this.playBeep(beatTime + interval * 0.25, false, true, this.subdivisionVolumes.sixteenth);
-      this.playBeep(beatTime + interval * 0.75, false, true, this.subdivisionVolumes.sixteenth);
+    if (this.volumes.sixteenth > 0) {
+      this.playBeep(beatTime + interval * 0.25, false, true, this.volumes.sixteenth);
+      this.playBeep(beatTime + interval * 0.75, false, true, this.volumes.sixteenth);
     }
 
     // Schedule triplet subdivisions at 33% and 66% through the beat
-    if (this.subdivisionVolumes.triplet > 0) {
-      this.playBeep(beatTime + interval / 3, false, true, this.subdivisionVolumes.triplet);
-      this.playBeep(beatTime + interval * 2 / 3, false, true, this.subdivisionVolumes.triplet);
+    if (this.volumes.triplet > 0) {
+      this.playBeep(beatTime + interval / 3, false, true, this.volumes.triplet);
+      this.playBeep(beatTime + interval * 2 / 3, false, true, this.volumes.triplet);
     }
 
     // Trigger callback for UI updates
