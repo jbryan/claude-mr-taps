@@ -2,6 +2,15 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.01.28-5] - 2026-01-28
+
+### Added
+- GitHub Pages deployment workflow for automatic publishing
+- Live demo link in README
+
+### Changed
+- App now available at https://jbryan.github.io/claude-mr-taps/
+
 ## [2026.01.28-4] - 2026-01-28
 
 ### Added
