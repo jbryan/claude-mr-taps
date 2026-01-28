@@ -395,13 +395,13 @@ footer {
   max-height: calc(85vh - 130px);
 }
 
-.theme-selector {
-  margin-bottom: 20px;
+.dialog-content > .control-group {
+  margin-bottom: 15px;
   padding-bottom: 15px;
   border-bottom: 1px solid var(--bg-color);
 }
 
-.theme-selector select {
+.dialog-content > .control-group select {
   padding: 10px 15px;
   background: var(--bg-color);
   color: var(--text-color);
@@ -411,7 +411,7 @@ footer {
   cursor: pointer;
 }
 
-.theme-selector select:focus {
+.dialog-content > .control-group select:focus {
   outline: 2px solid var(--primary-color);
 }
 

@@ -62,15 +62,35 @@ function setupDOM() {
         <option value="black">Black</option>
         <option value="light">Light</option>
       </select>
+      <select id="sound-preset">
+        <option value="default">Default</option>
+        <option value="click">Click</option>
+        <option value="clave">Clave</option>
+        <option value="beep">Beep</option>
+        <option value="hihat">Hi-Hat</option>
+        <option value="custom">Custom</option>
+      </select>
       <input type="number" id="accent-pitch" value="440">
-      <input type="number" id="accent-decay" value="80">
+      <input type="number" id="accent-attack" value="5">
+      <input type="number" id="accent-decay" value="40">
+      <input type="number" id="accent-sustain" value="50">
+      <input type="number" id="accent-release" value="40">
       <select id="accent-waveform"><option value="sine">Sine</option></select>
+      <input type="number" id="accent-noise" value="0">
       <input type="number" id="regular-pitch" value="880">
-      <input type="number" id="regular-decay" value="80">
+      <input type="number" id="regular-attack" value="5">
+      <input type="number" id="regular-decay" value="40">
+      <input type="number" id="regular-sustain" value="50">
+      <input type="number" id="regular-release" value="40">
       <select id="regular-waveform"><option value="sine">Sine</option></select>
+      <input type="number" id="regular-noise" value="0">
       <input type="number" id="subdivision-pitch" value="660">
-      <input type="number" id="subdivision-decay" value="80">
+      <input type="number" id="subdivision-attack" value="5">
+      <input type="number" id="subdivision-decay" value="40">
+      <input type="number" id="subdivision-sustain" value="50">
+      <input type="number" id="subdivision-release" value="40">
       <select id="subdivision-waveform"><option value="sine">Sine</option></select>
+      <input type="number" id="subdivision-noise" value="0">
     </dialog>
   `;
 
@@ -115,6 +135,64 @@ describe('App', () => {
 
       const indicators = document.querySelectorAll('.beat-indicator');
       expect(indicators.length).toBe(4); // Default 4 beats per measure
+    });
+  });
+
+  describe('scroll wheel support', () => {
+    test('tempo slider responds to scroll wheel up', async () => {
+      await import('../public/js/app.js');
+
+      const tempoSlider = document.getElementById('tempo-slider');
+      const bpmValue = document.getElementById('bpm-value');
+
+      // Scroll up (negative deltaY)
+      const wheelEvent = new WheelEvent('wheel', { deltaY: -100, bubbles: true });
+      tempoSlider.dispatchEvent(wheelEvent);
+
+      expect(bpmValue.textContent).toBe('121');
+    });
+
+    test('tempo slider responds to scroll wheel down', async () => {
+      await import('../public/js/app.js');
+
+      const tempoSlider = document.getElementById('tempo-slider');
+      const bpmValue = document.getElementById('bpm-value');
+
+      // Scroll down (positive deltaY)
+      const wheelEvent = new WheelEvent('wheel', { deltaY: 100, bubbles: true });
+      tempoSlider.dispatchEvent(wheelEvent);
+
+      expect(bpmValue.textContent).toBe('119');
+    });
+
+    test('volume slider responds to scroll wheel', async () => {
+      await import('../public/js/app.js');
+
+      const beatVolume = document.getElementById('beat-volume');
+      const beatValue = document.getElementById('beat-value');
+
+      // Scroll down (positive deltaY) - decreases by 5
+      const wheelEvent = new WheelEvent('wheel', { deltaY: 100, bubbles: true });
+      beatVolume.dispatchEvent(wheelEvent);
+
+      expect(beatValue.textContent).toBe('95%');
+    });
+
+    test('scroll wheel respects min/max bounds', async () => {
+      await import('../public/js/app.js');
+
+      const tempoSlider = document.getElementById('tempo-slider');
+      const bpmValue = document.getElementById('bpm-value');
+
+      // Set to max
+      tempoSlider.value = '300';
+      tempoSlider.dispatchEvent(new Event('input'));
+
+      // Try to scroll up past max
+      const wheelEvent = new WheelEvent('wheel', { deltaY: -100, bubbles: true });
+      tempoSlider.dispatchEvent(wheelEvent);
+
+      expect(bpmValue.textContent).toBe('300');
     });
   });
 
@@ -548,9 +626,9 @@ describe('App', () => {
       expect(accentPitch.value).toBe('100');
 
       // Test above maximum
-      accentPitch.value = '3000';
+      accentPitch.value = '15000';
       accentPitch.dispatchEvent(new Event('change'));
-      expect(accentPitch.value).toBe('2000');
+      expect(accentPitch.value).toBe('12000');
     });
 
     test('decay input clamps to valid range', async () => {
@@ -567,6 +645,191 @@ describe('App', () => {
       accentDecay.value = '600';
       accentDecay.dispatchEvent(new Event('change'));
       expect(accentDecay.value).toBe('500');
+    });
+
+    test('attack input updates metronome settings', async () => {
+      await import('../public/js/app.js');
+
+      const accentAttack = document.getElementById('accent-attack');
+      accentAttack.value = '10';
+      accentAttack.dispatchEvent(new Event('change'));
+
+      const savedSettings = JSON.parse(localStorageStore['mr-taps-settings']);
+      expect(savedSettings.soundSettings.accent.attack).toBe(0.01);
+    });
+
+    test('attack input clamps to valid range', async () => {
+      await import('../public/js/app.js');
+
+      const accentAttack = document.getElementById('accent-attack');
+
+      // Test below minimum
+      accentAttack.value = '0';
+      accentAttack.dispatchEvent(new Event('change'));
+      expect(accentAttack.value).toBe('1');
+
+      // Test above maximum
+      accentAttack.value = '200';
+      accentAttack.dispatchEvent(new Event('change'));
+      expect(accentAttack.value).toBe('100');
+    });
+
+    test('sustain input updates metronome settings', async () => {
+      await import('../public/js/app.js');
+
+      const accentSustain = document.getElementById('accent-sustain');
+      accentSustain.value = '75';
+      accentSustain.dispatchEvent(new Event('change'));
+
+      const savedSettings = JSON.parse(localStorageStore['mr-taps-settings']);
+      expect(savedSettings.soundSettings.accent.sustain).toBe(0.75);
+    });
+
+    test('sustain input clamps to valid range', async () => {
+      await import('../public/js/app.js');
+
+      const accentSustain = document.getElementById('accent-sustain');
+
+      // Test below minimum (should allow 0)
+      accentSustain.value = '-10';
+      accentSustain.dispatchEvent(new Event('change'));
+      expect(accentSustain.value).toBe('0');
+
+      // Test above maximum
+      accentSustain.value = '150';
+      accentSustain.dispatchEvent(new Event('change'));
+      expect(accentSustain.value).toBe('100');
+    });
+
+    test('release input updates metronome settings', async () => {
+      await import('../public/js/app.js');
+
+      const accentRelease = document.getElementById('accent-release');
+      accentRelease.value = '100';
+      accentRelease.dispatchEvent(new Event('change'));
+
+      const savedSettings = JSON.parse(localStorageStore['mr-taps-settings']);
+      expect(savedSettings.soundSettings.accent.release).toBe(0.1);
+    });
+
+    test('release input clamps to valid range', async () => {
+      await import('../public/js/app.js');
+
+      const accentRelease = document.getElementById('accent-release');
+
+      // Test below minimum
+      accentRelease.value = '0';
+      accentRelease.dispatchEvent(new Event('change'));
+      expect(accentRelease.value).toBe('1');
+
+      // Test above maximum
+      accentRelease.value = '600';
+      accentRelease.dispatchEvent(new Event('change'));
+      expect(accentRelease.value).toBe('500');
+    });
+
+    test('noise input updates metronome settings', async () => {
+      await import('../public/js/app.js');
+
+      const accentNoise = document.getElementById('accent-noise');
+      accentNoise.value = '50';
+      accentNoise.dispatchEvent(new Event('change'));
+
+      const savedSettings = JSON.parse(localStorageStore['mr-taps-settings']);
+      expect(savedSettings.soundSettings.accent.noise).toBe(0.5);
+    });
+
+    test('noise input clamps to valid range', async () => {
+      await import('../public/js/app.js');
+
+      const accentNoise = document.getElementById('accent-noise');
+
+      // Test below minimum (should allow 0)
+      accentNoise.value = '-10';
+      accentNoise.dispatchEvent(new Event('change'));
+      expect(accentNoise.value).toBe('0');
+
+      // Test above maximum
+      accentNoise.value = '150';
+      accentNoise.dispatchEvent(new Event('change'));
+      expect(accentNoise.value).toBe('100');
+    });
+  });
+
+  describe('sound presets', () => {
+    test('sound preset dropdown applies preset', async () => {
+      await import('../public/js/app.js');
+
+      const soundPreset = document.getElementById('sound-preset');
+      const accentPitch = document.getElementById('accent-pitch');
+
+      soundPreset.value = 'click';
+      soundPreset.dispatchEvent(new Event('change'));
+
+      expect(accentPitch.value).toBe('1000');
+    });
+
+    test('changing sound setting sets preset to custom', async () => {
+      await import('../public/js/app.js');
+
+      const soundPreset = document.getElementById('sound-preset');
+      const accentPitch = document.getElementById('accent-pitch');
+
+      accentPitch.value = '500';
+      accentPitch.dispatchEvent(new Event('change'));
+
+      expect(soundPreset.value).toBe('custom');
+    });
+
+    test('reset button resets preset to default', async () => {
+      await import('../public/js/app.js');
+
+      const soundPreset = document.getElementById('sound-preset');
+      const settingsReset = document.getElementById('settings-reset');
+
+      // Change to a different preset
+      soundPreset.value = 'click';
+      soundPreset.dispatchEvent(new Event('change'));
+
+      // Reset
+      settingsReset.click();
+
+      expect(soundPreset.value).toBe('default');
+    });
+
+    test('sound preset is saved to localStorage', async () => {
+      await import('../public/js/app.js');
+
+      const soundPreset = document.getElementById('sound-preset');
+
+      soundPreset.value = 'clave';
+      soundPreset.dispatchEvent(new Event('change'));
+
+      const savedSettings = JSON.parse(localStorageStore['mr-taps-settings']);
+      expect(savedSettings.soundPreset).toBe('clave');
+    });
+
+    test('sound preset is loaded from localStorage', async () => {
+      const savedSettings = {
+        bpm: 120,
+        beatsPerMeasure: 4,
+        soundPreset: 'beep',
+        soundSettings: {
+          accent: { pitch: 880, attack: 0.01, decay: 0.05, sustain: 0.8, release: 0.05, waveform: 'sine', gain: 1.0 },
+          regular: { pitch: 1760, attack: 0.01, decay: 0.04, sustain: 0.7, release: 0.04, waveform: 'sine', gain: 0.7 },
+          subdivision: { pitch: 1320, attack: 0.01, decay: 0.03, sustain: 0.6, release: 0.03, waveform: 'sine', gain: 0.3 },
+        },
+      };
+      localStorageStore['mr-taps-settings'] = JSON.stringify(savedSettings);
+
+      await import('../public/js/app.js');
+
+      // Open settings dialog to trigger UI update
+      const settingsBtn = document.getElementById('settings-btn');
+      settingsBtn.click();
+
+      const soundPreset = document.getElementById('sound-preset');
+      expect(soundPreset.value).toBe('beep');
     });
   });
 });

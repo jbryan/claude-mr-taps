@@ -340,6 +340,20 @@ describe('Metronome', () => {
       expect(Metronome.DEFAULT_SOUND_SETTINGS).toHaveProperty('regular');
       expect(Metronome.DEFAULT_SOUND_SETTINGS).toHaveProperty('subdivision');
     });
+
+    test('DEFAULT_SOUND_SETTINGS has ADSR parameters', () => {
+      for (const beatType of ['accent', 'regular', 'subdivision']) {
+        const settings = Metronome.DEFAULT_SOUND_SETTINGS[beatType];
+        expect(settings).toHaveProperty('attack');
+        expect(settings).toHaveProperty('decay');
+        expect(settings).toHaveProperty('sustain');
+        expect(settings).toHaveProperty('release');
+        expect(settings.attack).toBe(0.005);
+        expect(settings.decay).toBe(0.04);
+        expect(settings.sustain).toBe(0.5);
+        expect(settings.release).toBe(0.04);
+      }
+    });
   });
 
   describe('playBeep', () => {
@@ -361,6 +375,37 @@ describe('Metronome', () => {
 
     test('handles very low gain multiplier', () => {
       expect(() => metronome.playBeep(0, false, false, 0.001)).not.toThrow();
+    });
+
+    test('uses ADSR envelope parameters', () => {
+      metronome.setSoundSettings('accent', { attack: 0.01, decay: 0.05, sustain: 0.6, release: 0.08 });
+      expect(() => metronome.playBeep(0, true, false)).not.toThrow();
+    });
+
+    test('handles zero sustain', () => {
+      metronome.setSoundSettings('regular', { sustain: 0 });
+      expect(() => metronome.playBeep(0, false, false)).not.toThrow();
+    });
+
+    test('handles full sustain', () => {
+      metronome.setSoundSettings('regular', { sustain: 1.0 });
+      expect(() => metronome.playBeep(0, false, false)).not.toThrow();
+    });
+
+    test('plays with noise component', () => {
+      metronome.setSoundSettings('accent', { noise: 0.5 });
+      expect(() => metronome.playBeep(0, true, false)).not.toThrow();
+    });
+
+    test('plays with full noise (no oscillator)', () => {
+      metronome.setSoundSettings('regular', { noise: 1.0 });
+      expect(() => metronome.playBeep(0, false, false)).not.toThrow();
+    });
+
+    test('plays hihat preset with noise', () => {
+      metronome.applySoundPreset('hihat');
+      expect(metronome.soundSettings.accent.noise).toBe(0.9);
+      expect(() => metronome.playBeep(0, true, false)).not.toThrow();
     });
   });
 
@@ -447,6 +492,21 @@ describe('Metronome', () => {
       expect(metronome.soundSettings.regular.decay).toBe(0.1);
     });
 
+    test('setSoundSettings updates attack', () => {
+      metronome.setSoundSettings('accent', { attack: 0.01 });
+      expect(metronome.soundSettings.accent.attack).toBe(0.01);
+    });
+
+    test('setSoundSettings updates sustain', () => {
+      metronome.setSoundSettings('regular', { sustain: 0.75 });
+      expect(metronome.soundSettings.regular.sustain).toBe(0.75);
+    });
+
+    test('setSoundSettings updates release', () => {
+      metronome.setSoundSettings('subdivision', { release: 0.1 });
+      expect(metronome.soundSettings.subdivision.release).toBe(0.1);
+    });
+
     test('setSoundSettings updates waveform', () => {
       metronome.setSoundSettings('subdivision', { waveform: 'square' });
       expect(metronome.soundSettings.subdivision.waveform).toBe('square');
@@ -467,7 +527,7 @@ describe('Metronome', () => {
       metronome.setSoundSettings('accent', { pitch: 1000, decay: 0.2, waveform: 'sawtooth' });
       metronome.resetSoundSettings();
       expect(metronome.soundSettings.accent.pitch).toBe(440);
-      expect(metronome.soundSettings.accent.decay).toBe(0.08);
+      expect(metronome.soundSettings.accent.decay).toBe(0.04);
       expect(metronome.soundSettings.accent.waveform).toBe('sine');
     });
 
@@ -475,6 +535,43 @@ describe('Metronome', () => {
       const metronome2 = new Metronome();
       metronome.setSoundSettings('accent', { pitch: 1000 });
       expect(metronome2.soundSettings.accent.pitch).toBe(440);
+    });
+  });
+
+  describe('soundPresets', () => {
+    test('SOUND_PRESETS contains expected presets', () => {
+      expect(Metronome.SOUND_PRESETS).toHaveProperty('default');
+      expect(Metronome.SOUND_PRESETS).toHaveProperty('click');
+      expect(Metronome.SOUND_PRESETS).toHaveProperty('clave');
+      expect(Metronome.SOUND_PRESETS).toHaveProperty('beep');
+      expect(Metronome.SOUND_PRESETS).toHaveProperty('hihat');
+    });
+
+    test('each preset has name and settings', () => {
+      for (const presetName of Object.keys(Metronome.SOUND_PRESETS)) {
+        const preset = Metronome.SOUND_PRESETS[presetName];
+        expect(preset).toHaveProperty('name');
+        expect(preset).toHaveProperty('settings');
+        expect(preset.settings).toHaveProperty('accent');
+        expect(preset.settings).toHaveProperty('regular');
+        expect(preset.settings).toHaveProperty('subdivision');
+      }
+    });
+
+    test('applySoundPreset applies preset settings', () => {
+      metronome.applySoundPreset('click');
+      expect(metronome.soundSettings.accent.pitch).toBe(1000);
+      expect(metronome.soundSettings.accent.waveform).toBe('square');
+    });
+
+    test('applySoundPreset throws for invalid preset', () => {
+      expect(() => metronome.applySoundPreset('invalid')).toThrow(RangeError);
+    });
+
+    test('applySoundPreset creates independent copy', () => {
+      metronome.applySoundPreset('click');
+      metronome.setSoundSettings('accent', { pitch: 2000 });
+      expect(Metronome.SOUND_PRESETS.click.settings.accent.pitch).toBe(1000);
     });
   });
 });

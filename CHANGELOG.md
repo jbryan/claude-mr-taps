@@ -2,6 +2,33 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.01.28-2] - 2026-01-28
+
+### Added
+- Full ADSR envelope support for sound synthesis:
+  - Attack (1-100 ms): time to reach peak volume
+  - Decay (10-500 ms): time to fall to sustain level
+  - Sustain (0-100%): held volume level as percentage of peak
+  - Release (1-500 ms): time to fade to silence
+- Sound presets dropdown in settings dialog:
+  - Default: warm sine wave tones
+  - Click: sharp traditional metronome sound (square wave, short envelope)
+  - Clave: woody percussive sound (triangle wave, longer decay)
+  - Beep: electronic tones with sustain
+  - Hi-Hat: realistic metallic percussion with white noise
+- White noise synthesis for percussion sounds:
+  - New `noise` parameter (0-100%) controls oscillator/noise mix
+  - Noise buffer generated per-beat using Web Audio API
+- Scroll wheel support for all range sliders:
+  - Tempo slider: ±1 BPM per scroll tick
+  - Volume sliders: ±5% per scroll tick
+
+### Changed
+- Pitch range extended from 2000 Hz to 12000 Hz (for metallic hi-hat sounds)
+- Default decay reduced from 80ms to 40ms (with 40ms release maintains similar duration)
+- Settings dialog dropdowns now have consistent styling
+- Test count increased from 131 to 136
+
 ## [2026.01.28-1] - 2026-01-28
 
 ### Added

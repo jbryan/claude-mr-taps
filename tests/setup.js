@@ -6,6 +6,7 @@ class MockAudioContext {
     this.currentTime = 0;
     this.state = 'running';
     this.destination = {};
+    this.sampleRate = 44100;
   }
 
   createOscillator() {
@@ -28,6 +29,26 @@ class MockAudioContext {
         value: 1,
       },
       connect: jest.fn(),
+      disconnect: jest.fn(),
+    };
+  }
+
+  createBuffer(channels, length, sampleRate) {
+    const data = new Float32Array(length);
+    return {
+      numberOfChannels: channels,
+      length: length,
+      sampleRate: sampleRate,
+      getChannelData: () => data,
+    };
+  }
+
+  createBufferSource() {
+    return {
+      buffer: null,
+      connect: jest.fn(),
+      start: jest.fn(),
+      stop: jest.fn(),
       disconnect: jest.fn(),
     };
   }

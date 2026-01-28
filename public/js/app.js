@@ -37,23 +37,36 @@ const settingsDialog = document.getElementById('settings-dialog');
 const settingsClose = document.getElementById('settings-close');
 const settingsReset = document.getElementById('settings-reset');
 const themeSelect = document.getElementById('theme-select');
+const soundPresetSelect = document.getElementById('sound-preset');
 
 // Sound setting inputs
 const soundInputs = {
   accent: {
     pitch: document.getElementById('accent-pitch'),
+    attack: document.getElementById('accent-attack'),
     decay: document.getElementById('accent-decay'),
+    sustain: document.getElementById('accent-sustain'),
+    release: document.getElementById('accent-release'),
     waveform: document.getElementById('accent-waveform'),
+    noise: document.getElementById('accent-noise'),
   },
   regular: {
     pitch: document.getElementById('regular-pitch'),
+    attack: document.getElementById('regular-attack'),
     decay: document.getElementById('regular-decay'),
+    sustain: document.getElementById('regular-sustain'),
+    release: document.getElementById('regular-release'),
     waveform: document.getElementById('regular-waveform'),
+    noise: document.getElementById('regular-noise'),
   },
   subdivision: {
     pitch: document.getElementById('subdivision-pitch'),
+    attack: document.getElementById('subdivision-attack'),
     decay: document.getElementById('subdivision-decay'),
+    sustain: document.getElementById('subdivision-sustain'),
+    release: document.getElementById('subdivision-release'),
     waveform: document.getElementById('subdivision-waveform'),
+    noise: document.getElementById('subdivision-noise'),
   },
 };
 
@@ -62,6 +75,9 @@ const metronome = new Metronome();
 
 // Current theme
 let currentTheme = 'default';
+
+// Current sound preset
+let currentSoundPreset = 'default';
 
 // Apply theme to document
 function applyTheme(theme) {
@@ -77,6 +93,7 @@ function saveSettings() {
     secondaryBeatsPerMeasure: metronome.secondaryBeatsPerMeasure,
     volumes: metronome.volumes,
     soundSettings: metronome.soundSettings,
+    soundPreset: currentSoundPreset,
     theme: currentTheme,
   };
   try {
@@ -115,6 +132,9 @@ function loadSettings() {
             metronome.setSoundSettings(beatType, settings.soundSettings[beatType]);
           }
         }
+      }
+      if (settings.soundPreset) {
+        currentSoundPreset = settings.soundPreset;
       }
       if (settings.theme) {
         applyTheme(settings.theme);
@@ -232,6 +252,28 @@ function updatePlayButton(isPlaying) {
   stopIcon.classList.toggle('hidden', !isPlaying);
 }
 
+// Add scroll wheel support to a range input
+function addWheelSupport(slider, step = 1) {
+  slider.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const min = parseInt(slider.min, 10) || 0;
+    const max = parseInt(slider.max, 10) || 100;
+    const currentValue = parseInt(slider.value, 10);
+    const delta = e.deltaY < 0 ? step : -step;
+    const newValue = Math.max(min, Math.min(max, currentValue + delta));
+    if (newValue !== currentValue) {
+      slider.value = newValue;
+      slider.dispatchEvent(new Event('input'));
+    }
+  }, { passive: false });
+}
+
+// Add wheel support to all sliders
+addWheelSupport(tempoSlider, 1);
+for (const type of ['beat', 'eighth', 'sixteenth', 'triplet']) {
+  addWheelSupport(volumeSliders[type], 5);
+}
+
 // Event Listeners
 tempoSlider.addEventListener('input', (e) => {
   const bpm = parseInt(e.target.value, 10);
@@ -323,21 +365,39 @@ metronome.onBeat = highlightBeat;
 // Settings Dialog Functions
 function updateSettingsUI() {
   themeSelect.value = currentTheme;
+  soundPresetSelect.value = currentSoundPreset;
   const settings = metronome.soundSettings;
   for (const beatType of ['accent', 'regular', 'subdivision']) {
     soundInputs[beatType].pitch.value = settings[beatType].pitch;
-    soundInputs[beatType].decay.value = Math.round(settings[beatType].decay * 1000);
+    soundInputs[beatType].attack.value = Math.round((settings[beatType].attack || 0.005) * 1000);
+    soundInputs[beatType].decay.value = Math.round((settings[beatType].decay || 0.04) * 1000);
+    soundInputs[beatType].sustain.value = Math.round((settings[beatType].sustain !== undefined ? settings[beatType].sustain : 0.5) * 100);
+    soundInputs[beatType].release.value = Math.round((settings[beatType].release || 0.04) * 1000);
     soundInputs[beatType].waveform.value = settings[beatType].waveform;
+    soundInputs[beatType].noise.value = Math.round((settings[beatType].noise || 0) * 100);
   }
 }
 
+function applySoundPreset(presetName) {
+  metronome.applySoundPreset(presetName);
+  currentSoundPreset = presetName;
+  updateSettingsUI();
+  saveSettings();
+}
+
 function applySoundSetting(beatType, setting, value) {
-  if (setting === 'decay') {
+  if (setting === 'attack' || setting === 'decay' || setting === 'release') {
     // Convert ms to seconds
-    metronome.setSoundSettings(beatType, { decay: value / 1000 });
+    metronome.setSoundSettings(beatType, { [setting]: value / 1000 });
+  } else if (setting === 'sustain' || setting === 'noise') {
+    // Convert percentage (0-100) to ratio (0-1)
+    metronome.setSoundSettings(beatType, { [setting]: value / 100 });
   } else {
     metronome.setSoundSettings(beatType, { [setting]: value });
   }
+  // Mark as custom preset when manually changing settings
+  currentSoundPreset = 'custom';
+  soundPresetSelect.value = 'custom';
   saveSettings();
 }
 
@@ -362,6 +422,7 @@ settingsReset.addEventListener('click', () => {
   metronome.resetSoundSettings();
   metronome.resetVolumes();
   applyTheme('default');
+  currentSoundPreset = 'default';
   // Reset volume sliders in UI
   for (const type of ['beat', 'eighth', 'sixteenth', 'triplet']) {
     const defaultVolume = Metronome.DEFAULT_VOLUMES[type];
@@ -377,22 +438,57 @@ themeSelect.addEventListener('change', (e) => {
   saveSettings();
 });
 
+soundPresetSelect.addEventListener('change', (e) => {
+  if (e.target.value !== 'custom') {
+    applySoundPreset(e.target.value);
+  }
+});
+
 // Add event listeners for all sound setting inputs
 for (const beatType of ['accent', 'regular', 'subdivision']) {
   soundInputs[beatType].pitch.addEventListener('change', (e) => {
-    const value = Math.max(100, Math.min(2000, parseInt(e.target.value, 10) || 440));
+    const value = Math.max(100, Math.min(12000, parseInt(e.target.value, 10) || 440));
     e.target.value = value;
     applySoundSetting(beatType, 'pitch', value);
   });
 
+  soundInputs[beatType].attack.addEventListener('change', (e) => {
+    const parsed = parseInt(e.target.value, 10);
+    const value = Math.max(1, Math.min(100, isNaN(parsed) ? 5 : parsed));
+    e.target.value = value;
+    applySoundSetting(beatType, 'attack', value);
+  });
+
   soundInputs[beatType].decay.addEventListener('change', (e) => {
-    const value = Math.max(10, Math.min(500, parseInt(e.target.value, 10) || 80));
+    const parsed = parseInt(e.target.value, 10);
+    const value = Math.max(10, Math.min(500, isNaN(parsed) ? 40 : parsed));
     e.target.value = value;
     applySoundSetting(beatType, 'decay', value);
   });
 
+  soundInputs[beatType].sustain.addEventListener('change', (e) => {
+    const parsed = parseInt(e.target.value, 10);
+    const value = Math.max(0, Math.min(100, isNaN(parsed) ? 50 : parsed));
+    e.target.value = value;
+    applySoundSetting(beatType, 'sustain', value);
+  });
+
+  soundInputs[beatType].release.addEventListener('change', (e) => {
+    const parsed = parseInt(e.target.value, 10);
+    const value = Math.max(1, Math.min(500, isNaN(parsed) ? 40 : parsed));
+    e.target.value = value;
+    applySoundSetting(beatType, 'release', value);
+  });
+
   soundInputs[beatType].waveform.addEventListener('change', (e) => {
     applySoundSetting(beatType, 'waveform', e.target.value);
+  });
+
+  soundInputs[beatType].noise.addEventListener('change', (e) => {
+    const parsed = parseInt(e.target.value, 10);
+    const value = Math.max(0, Math.min(100, isNaN(parsed) ? 0 : parsed));
+    e.target.value = value;
+    applySoundSetting(beatType, 'noise', value);
   });
 }
 

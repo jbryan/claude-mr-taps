@@ -108,7 +108,7 @@
       </button>
     </div>
     <div class="dialog-content">
-      <div class="control-group theme-selector">
+      <div class="control-group">
         <label for="theme-select">Color Theme</label>
         <select id="theme-select">
           <option value="default">Default</option>
@@ -117,15 +117,39 @@
         </select>
       </div>
 
+      <div class="control-group">
+        <label for="sound-preset">Sound Preset</label>
+        <select id="sound-preset">
+          <option value="default">Default</option>
+          <option value="click">Click</option>
+          <option value="clave">Clave</option>
+          <option value="beep">Beep</option>
+          <option value="hihat">Hi-Hat</option>
+          <option value="custom">Custom</option>
+        </select>
+      </div>
+
       <fieldset class="sound-group">
         <legend>Accent Beat</legend>
         <div class="setting-row">
           <label for="accent-pitch">Pitch (Hz)</label>
-          <input type="number" id="accent-pitch" min="100" max="2000" value="440">
+          <input type="number" id="accent-pitch" min="100" max="12000" value="440">
+        </div>
+        <div class="setting-row">
+          <label for="accent-attack">Attack (ms)</label>
+          <input type="number" id="accent-attack" min="1" max="100" value="5">
         </div>
         <div class="setting-row">
           <label for="accent-decay">Decay (ms)</label>
-          <input type="number" id="accent-decay" min="10" max="500" value="80">
+          <input type="number" id="accent-decay" min="10" max="500" value="40">
+        </div>
+        <div class="setting-row">
+          <label for="accent-sustain">Sustain (%)</label>
+          <input type="number" id="accent-sustain" min="0" max="100" value="50">
+        </div>
+        <div class="setting-row">
+          <label for="accent-release">Release (ms)</label>
+          <input type="number" id="accent-release" min="1" max="500" value="40">
         </div>
         <div class="setting-row">
           <label for="accent-waveform">Waveform</label>
@@ -136,17 +160,33 @@
             <option value="sawtooth">Sawtooth</option>
           </select>
         </div>
+        <div class="setting-row">
+          <label for="accent-noise">Noise (%)</label>
+          <input type="number" id="accent-noise" min="0" max="100" value="0">
+        </div>
       </fieldset>
 
       <fieldset class="sound-group">
         <legend>Regular Beat</legend>
         <div class="setting-row">
           <label for="regular-pitch">Pitch (Hz)</label>
-          <input type="number" id="regular-pitch" min="100" max="2000" value="880">
+          <input type="number" id="regular-pitch" min="100" max="12000" value="880">
+        </div>
+        <div class="setting-row">
+          <label for="regular-attack">Attack (ms)</label>
+          <input type="number" id="regular-attack" min="1" max="100" value="5">
         </div>
         <div class="setting-row">
           <label for="regular-decay">Decay (ms)</label>
-          <input type="number" id="regular-decay" min="10" max="500" value="80">
+          <input type="number" id="regular-decay" min="10" max="500" value="40">
+        </div>
+        <div class="setting-row">
+          <label for="regular-sustain">Sustain (%)</label>
+          <input type="number" id="regular-sustain" min="0" max="100" value="50">
+        </div>
+        <div class="setting-row">
+          <label for="regular-release">Release (ms)</label>
+          <input type="number" id="regular-release" min="1" max="500" value="40">
         </div>
         <div class="setting-row">
           <label for="regular-waveform">Waveform</label>
@@ -157,17 +197,33 @@
             <option value="sawtooth">Sawtooth</option>
           </select>
         </div>
+        <div class="setting-row">
+          <label for="regular-noise">Noise (%)</label>
+          <input type="number" id="regular-noise" min="0" max="100" value="0">
+        </div>
       </fieldset>
 
       <fieldset class="sound-group">
         <legend>Subdivision Beat</legend>
         <div class="setting-row">
           <label for="subdivision-pitch">Pitch (Hz)</label>
-          <input type="number" id="subdivision-pitch" min="100" max="2000" value="660">
+          <input type="number" id="subdivision-pitch" min="100" max="12000" value="660">
+        </div>
+        <div class="setting-row">
+          <label for="subdivision-attack">Attack (ms)</label>
+          <input type="number" id="subdivision-attack" min="1" max="100" value="5">
         </div>
         <div class="setting-row">
           <label for="subdivision-decay">Decay (ms)</label>
-          <input type="number" id="subdivision-decay" min="10" max="500" value="80">
+          <input type="number" id="subdivision-decay" min="10" max="500" value="40">
+        </div>
+        <div class="setting-row">
+          <label for="subdivision-sustain">Sustain (%)</label>
+          <input type="number" id="subdivision-sustain" min="0" max="100" value="50">
+        </div>
+        <div class="setting-row">
+          <label for="subdivision-release">Release (ms)</label>
+          <input type="number" id="subdivision-release" min="1" max="500" value="40">
         </div>
         <div class="setting-row">
           <label for="subdivision-waveform">Waveform</label>
@@ -177,6 +233,10 @@
             <option value="triangle">Triangle</option>
             <option value="sawtooth">Sawtooth</option>
           </select>
+        </div>
+        <div class="setting-row">
+          <label for="subdivision-noise">Noise (%)</label>
+          <input type="number" id="subdivision-noise" min="0" max="100" value="0">
         </div>
       </fieldset>
     </div>

@@ -14,9 +14,52 @@ export class Metronome {
   };
   static WAVEFORMS = ['sine', 'square', 'triangle', 'sawtooth'];
   static DEFAULT_SOUND_SETTINGS = {
-    accent: { pitch: 440, decay: 0.08, waveform: 'sine', gain: 1.0 },
-    regular: { pitch: 880, decay: 0.08, waveform: 'sine', gain: 0.7 },
-    subdivision: { pitch: 660, decay: 0.08, waveform: 'sine', gain: 0.3 },
+    accent: { pitch: 440, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 1.0, noise: 0 },
+    regular: { pitch: 880, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 0.7, noise: 0 },
+    subdivision: { pitch: 660, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 0.3, noise: 0 },
+  };
+  static SOUND_PRESETS = {
+    default: {
+      name: 'Default',
+      settings: {
+        accent: { pitch: 440, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 1.0, noise: 0 },
+        regular: { pitch: 880, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 0.7, noise: 0 },
+        subdivision: { pitch: 660, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 0.3, noise: 0 },
+      },
+    },
+    click: {
+      name: 'Click',
+      settings: {
+        accent: { pitch: 1000, attack: 0.001, decay: 0.02, sustain: 0, release: 0.01, waveform: 'square', gain: 1.0, noise: 0 },
+        regular: { pitch: 1200, attack: 0.001, decay: 0.015, sustain: 0, release: 0.01, waveform: 'square', gain: 0.7, noise: 0 },
+        subdivision: { pitch: 1500, attack: 0.001, decay: 0.01, sustain: 0, release: 0.005, waveform: 'square', gain: 0.3, noise: 0 },
+      },
+    },
+    clave: {
+      name: 'Clave',
+      settings: {
+        accent: { pitch: 800, attack: 0.002, decay: 0.06, sustain: 0.2, release: 0.08, waveform: 'triangle', gain: 1.0, noise: 0 },
+        regular: { pitch: 1000, attack: 0.002, decay: 0.05, sustain: 0.15, release: 0.06, waveform: 'triangle', gain: 0.7, noise: 0 },
+        subdivision: { pitch: 1200, attack: 0.002, decay: 0.04, sustain: 0.1, release: 0.04, waveform: 'triangle', gain: 0.3, noise: 0 },
+      },
+    },
+    beep: {
+      name: 'Beep',
+      settings: {
+        accent: { pitch: 880, attack: 0.01, decay: 0.05, sustain: 0.8, release: 0.05, waveform: 'sine', gain: 1.0, noise: 0 },
+        regular: { pitch: 1760, attack: 0.01, decay: 0.04, sustain: 0.7, release: 0.04, waveform: 'sine', gain: 0.7, noise: 0 },
+        subdivision: { pitch: 1320, attack: 0.01, decay: 0.03, sustain: 0.6, release: 0.03, waveform: 'sine', gain: 0.3, noise: 0 },
+      },
+    },
+    hihat: {
+      name: 'Hi-Hat',
+      settings: {
+        // Hi-hat: noise-dominant with metallic high frequencies, instant attack, fast decay
+        accent: { pitch: 6000, attack: 0.001, decay: 0.04, sustain: 0, release: 0.03, waveform: 'square', gain: 0.8, noise: 0.9 },
+        regular: { pitch: 8000, attack: 0.001, decay: 0.03, sustain: 0, release: 0.02, waveform: 'square', gain: 0.6, noise: 0.9 },
+        subdivision: { pitch: 10000, attack: 0.001, decay: 0.02, sustain: 0, release: 0.015, waveform: 'square', gain: 0.3, noise: 0.9 },
+      },
+    },
   };
 
   constructor(audioContext = null) {
@@ -117,6 +160,22 @@ export class Metronome {
   }
 
   /**
+   * Create a white noise buffer
+   * @param {number} duration - Duration in seconds
+   * @returns {AudioBuffer} White noise buffer
+   */
+  createNoiseBuffer(duration) {
+    const sampleRate = this.audioContext.sampleRate;
+    const bufferSize = Math.ceil(sampleRate * duration);
+    const buffer = this.audioContext.createBuffer(1, bufferSize, sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    return buffer;
+  }
+
+  /**
    * Play a beep sound at the specified time
    * @param {number} time - AudioContext time to play the sound
    * @param {boolean} isAccent - Whether this is an accented beat
@@ -124,12 +183,6 @@ export class Metronome {
    * @param {number} gainMultiplier - Multiplier for the gain (0-1), used for subdivision volumes
    */
   playBeep(time, isAccent = false, isSubdivision = false, gainMultiplier = 1) {
-    const oscillator = this.audioContext.createOscillator();
-    const gainNode = this.audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(this.audioContext.destination);
-
     // Get settings based on beat type
     let settings;
     if (isAccent) {
@@ -140,24 +193,67 @@ export class Metronome {
       settings = this.soundSettings.regular;
     }
 
-    oscillator.type = settings.waveform;
-    oscillator.frequency.setValueAtTime(settings.pitch, time);
-
-    // Percussive envelope with quick attack and configurable decay
-    const attackTime = 0.005; // 5ms attack
-    const decayTime = settings.decay;
-    const duration = attackTime + decayTime;
+    // ADSR envelope: Attack -> Decay -> Sustain level -> Release
+    const attack = settings.attack || 0.005;
+    const decay = settings.decay || 0.04;
+    const sustain = settings.sustain !== undefined ? settings.sustain : 0.5;
+    const release = settings.release || 0.04;
+    const duration = attack + decay + release;
 
     // Apply gain multiplier to the final gain
     const finalGain = settings.gain * gainMultiplier;
+    const sustainGain = Math.max(0.001, finalGain * sustain);
 
-    // Start at 0, quick attack to peak, then exponential decay
-    gainNode.gain.setValueAtTime(0.001, time);
-    gainNode.gain.exponentialRampToValueAtTime(Math.max(0.001, finalGain), time + attackTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
+    // Noise amount (0-1), default to 0
+    const noiseAmount = settings.noise || 0;
+    const oscAmount = 1 - noiseAmount;
 
-    oscillator.start(time);
-    oscillator.stop(time + duration);
+    // Create oscillator if there's any oscillator component
+    if (oscAmount > 0) {
+      const oscillator = this.audioContext.createOscillator();
+      const oscGainNode = this.audioContext.createGain();
+
+      oscillator.connect(oscGainNode);
+      oscGainNode.connect(this.audioContext.destination);
+
+      oscillator.type = settings.waveform;
+      oscillator.frequency.setValueAtTime(settings.pitch, time);
+
+      // ADSR envelope for oscillator
+      const oscFinalGain = finalGain * oscAmount;
+      const oscSustainGain = Math.max(0.001, oscFinalGain * sustain);
+
+      oscGainNode.gain.setValueAtTime(0.001, time);
+      oscGainNode.gain.exponentialRampToValueAtTime(Math.max(0.001, oscFinalGain), time + attack);
+      oscGainNode.gain.exponentialRampToValueAtTime(oscSustainGain, time + attack + decay);
+      oscGainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+      oscillator.start(time);
+      oscillator.stop(time + duration);
+    }
+
+    // Create noise if there's any noise component
+    if (noiseAmount > 0) {
+      const noiseBuffer = this.createNoiseBuffer(duration);
+      const noiseSource = this.audioContext.createBufferSource();
+      const noiseGainNode = this.audioContext.createGain();
+
+      noiseSource.buffer = noiseBuffer;
+      noiseSource.connect(noiseGainNode);
+      noiseGainNode.connect(this.audioContext.destination);
+
+      // ADSR envelope for noise
+      const noiseFinalGain = finalGain * noiseAmount;
+      const noiseSustainGain = Math.max(0.001, noiseFinalGain * sustain);
+
+      noiseGainNode.gain.setValueAtTime(0.001, time);
+      noiseGainNode.gain.exponentialRampToValueAtTime(Math.max(0.001, noiseFinalGain), time + attack);
+      noiseGainNode.gain.exponentialRampToValueAtTime(noiseSustainGain, time + attack + decay);
+      noiseGainNode.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+      noiseSource.start(time);
+      noiseSource.stop(time + duration);
+    }
   }
 
   /**
@@ -177,6 +273,18 @@ export class Metronome {
    */
   resetSoundSettings() {
     this.soundSettings = JSON.parse(JSON.stringify(Metronome.DEFAULT_SOUND_SETTINGS));
+  }
+
+  /**
+   * Apply a sound preset
+   * @param {string} presetName - Name of the preset ('default', 'click', 'clave', etc.)
+   */
+  applySoundPreset(presetName) {
+    const preset = Metronome.SOUND_PRESETS[presetName];
+    if (!preset) {
+      throw new RangeError(`Invalid preset: ${presetName}`);
+    }
+    this.soundSettings = JSON.parse(JSON.stringify(preset.settings));
   }
 
   /**
