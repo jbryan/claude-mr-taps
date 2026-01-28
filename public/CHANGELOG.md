@@ -2,6 +2,12 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.01.28-6] - 2026-01-28
+
+### Fixed
+- Mobile layout now respects device safe areas (notches, status bars)
+- Header no longer cut off on Android devices like Pixel 9
+
 ## [2026.01.28-5] - 2026-01-28
 
 ### Added
