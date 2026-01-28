@@ -2,6 +2,18 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.01.28-7] - 2026-01-28
+
+### Changed
+- Completely reworked mobile layout for better small screen support
+- Content now scrolls instead of being clipped on small screens
+- Added responsive breakpoints for width (<500px) and height (<700px)
+- Reduced padding, gaps, and font sizes on smaller displays
+- Footer hidden on very short screens to save space
+
+### Fixed
+- Header no longer cut off by status bars on mobile devices
+
 ## [2026.01.28-6] - 2026-01-28
 
 ### Fixed
