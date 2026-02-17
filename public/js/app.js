@@ -789,10 +789,18 @@ let mediaSessionAudio = null;
 
 function ensureMediaSessionAudio() {
   if (mediaSessionAudio) return mediaSessionAudio;
-  const dest = metronome.audioContext.createMediaStreamDestination();
+  const ctx = metronome.audioContext;
+  const dest = ctx.createMediaStreamDestination();
+  // Android Chrome requires actual audio data flowing through the stream
+  // to activate media session. Connect a silent oscillator to provide it.
+  const osc = ctx.createOscillator();
+  const silentGain = ctx.createGain();
+  silentGain.gain.value = 0;
+  osc.connect(silentGain);
+  silentGain.connect(dest);
+  osc.start();
   mediaSessionAudio = new Audio();
   mediaSessionAudio.srcObject = dest.stream;
-  mediaSessionAudio.volume = 0;
   return mediaSessionAudio;
 }
 

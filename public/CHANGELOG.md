@@ -2,6 +2,11 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.02.17-2] - 2026-02-17
+
+### Fixed
+- Media session controls now work on Android (requires active audio stream)
+
 ## [2026.02.17-1] - 2026-02-17
 
 ### Added
