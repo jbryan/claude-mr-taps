@@ -2,6 +2,11 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.02.17-3] - 2026-02-17
+
+### Fixed
+- Installed PWAs now proactively check for updates on foreground resume and hourly, fixing stale versions on Android
+
 ## [2026.02.17-2] - 2026-02-17
 
 ### Fixed

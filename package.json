@@ -1,6 +1,6 @@
 {
   "name": "mr-taps",
-  "version": "2026.02.17-2",
+  "version": "2026.02.17-3",
   "description": "A PWA metronome application",
   "main": "public/js/metronome.js",
   "type": "module",

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mr-taps-v12';
+const CACHE_NAME = 'mr-taps-v13';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
