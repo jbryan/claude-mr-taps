@@ -134,6 +134,7 @@ function handleTapTempo() {
   if (bpm !== null) {
     metronome.setTempo(bpm);
     updateBpmDisplay();
+    updateMediaSessionMetadata();
     saveSettings();
   }
 
@@ -342,6 +343,7 @@ tempoSlider.addEventListener('input', (e) => {
   const bpm = parseInt(e.target.value, 10);
   metronome.setTempo(bpm);
   bpmValue.textContent = bpm;
+  updateMediaSessionMetadata();
   saveSettings();
 });
 
@@ -349,6 +351,7 @@ tempoDown.addEventListener('click', () => {
   if (metronome.bpm > Metronome.MIN_BPM) {
     metronome.setTempo(metronome.bpm - 1);
     updateBpmDisplay();
+    updateMediaSessionMetadata();
     saveSettings();
   }
 });
@@ -357,6 +360,7 @@ tempoUp.addEventListener('click', () => {
   if (metronome.bpm < Metronome.MAX_BPM) {
     metronome.setTempo(metronome.bpm + 1);
     updateBpmDisplay();
+    updateMediaSessionMetadata();
     saveSettings();
   }
 });
@@ -365,6 +369,7 @@ tempoDown5.addEventListener('click', () => {
   const newBpm = Math.max(Metronome.MIN_BPM, metronome.bpm - 5);
   metronome.setTempo(newBpm);
   updateBpmDisplay();
+  updateMediaSessionMetadata();
   saveSettings();
 });
 
@@ -372,6 +377,7 @@ tempoUp5.addEventListener('click', () => {
   const newBpm = Math.min(Metronome.MAX_BPM, metronome.bpm + 5);
   metronome.setTempo(newBpm);
   updateBpmDisplay();
+  updateMediaSessionMetadata();
   saveSettings();
 });
 
@@ -404,8 +410,11 @@ for (const type of ['beat', 'eighth', 'sixteenth', 'triplet']) {
 playBtn.addEventListener('click', () => {
   metronome.toggle();
   updatePlayButton(metronome.isPlaying);
-  if (!metronome.isPlaying) {
+  if (metronome.isPlaying) {
+    startMediaSession();
+  } else {
     resetBeatIndicators();
+    stopMediaSession();
   }
 });
 
@@ -415,8 +424,11 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     metronome.toggle();
     updatePlayButton(metronome.isPlaying);
-    if (!metronome.isPlaying) {
+    if (metronome.isPlaying) {
+      startMediaSession();
+    } else {
       resetBeatIndicators();
+      stopMediaSession();
     }
   }
   if (e.code === 'Escape' && settingsDialog.open) {
@@ -767,6 +779,85 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
+
+// Media Session API for hardware/OS media controls
+// A playing <audio> element is required for the browser to activate
+// media session handlers — Web Audio API alone is not sufficient.
+// We use a MediaStreamDestination to create a silent stream from
+// the existing AudioContext rather than looping a short audio file.
+let mediaSessionAudio = null;
+
+function ensureMediaSessionAudio() {
+  if (mediaSessionAudio) return mediaSessionAudio;
+  const dest = metronome.audioContext.createMediaStreamDestination();
+  mediaSessionAudio = new Audio();
+  mediaSessionAudio.srcObject = dest.stream;
+  mediaSessionAudio.volume = 0;
+  return mediaSessionAudio;
+}
+
+function startMediaSession() {
+  if (!('mediaSession' in navigator)) return;
+  const audio = ensureMediaSessionAudio();
+  audio.play().catch(() => {});
+  navigator.mediaSession.playbackState = 'playing';
+  updateMediaSessionMetadata();
+}
+
+function stopMediaSession() {
+  if (!('mediaSession' in navigator)) return;
+  if (mediaSessionAudio) {
+    mediaSessionAudio.pause();
+  }
+  navigator.mediaSession.playbackState = 'paused';
+}
+
+function setupMediaSession() {
+  if (!('mediaSession' in navigator)) return;
+
+  navigator.mediaSession.setActionHandler('play', () => {
+    if (!metronome.isPlaying) {
+      metronome.toggle();
+      updatePlayButton(true);
+      startMediaSession();
+    }
+  });
+
+  navigator.mediaSession.setActionHandler('pause', () => {
+    if (metronome.isPlaying) {
+      metronome.toggle();
+      updatePlayButton(false);
+      resetBeatIndicators();
+      stopMediaSession();
+    }
+  });
+
+  navigator.mediaSession.setActionHandler('nexttrack', () => {
+    const newBpm = Math.min(Metronome.MAX_BPM, metronome.bpm + 5);
+    metronome.setTempo(newBpm);
+    updateBpmDisplay();
+    updateMediaSessionMetadata();
+    saveSettings();
+  });
+
+  navigator.mediaSession.setActionHandler('previoustrack', () => {
+    const newBpm = Math.max(Metronome.MIN_BPM, metronome.bpm - 5);
+    metronome.setTempo(newBpm);
+    updateBpmDisplay();
+    updateMediaSessionMetadata();
+    saveSettings();
+  });
+}
+
+function updateMediaSessionMetadata() {
+  if (!('mediaSession' in navigator)) return;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: 'Mr. Taps Metronome',
+    artist: `${metronome.bpm} BPM`,
+  });
+}
+
+setupMediaSession();
 
 // Initialize the app
 initUI();

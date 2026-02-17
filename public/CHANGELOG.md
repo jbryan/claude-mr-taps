@@ -2,6 +2,14 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.02.17-1] - 2026-02-17
+
+### Added
+- Media Session API support: hardware media keys and OS media controls (lock screen, notification shade) now control the metronome
+- Play/pause media keys start and stop the metronome
+- Next/previous track media keys adjust tempo by +/- 5 BPM
+- Media session metadata displays current BPM
+
 ## [2026.01.28-8] - 2026-01-28
 
 ### Added
