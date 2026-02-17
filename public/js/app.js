@@ -767,6 +767,17 @@ if ('serviceWorker' in navigator) {
             });
           }
         });
+
+        // Proactively check for updates — installed PWAs may stay open
+        // for long periods without a navigation that triggers a check
+        setInterval(() => registration.update(), 60 * 60 * 1000);
+
+        // Also check when the app returns to the foreground
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            registration.update();
+          }
+        });
       },
       (error) => {
         console.log('ServiceWorker registration failed:', error);
