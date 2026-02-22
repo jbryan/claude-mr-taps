@@ -85,7 +85,7 @@ const metronome = new Metronome();
 let currentTheme = 'default';
 
 // Current sound preset
-let currentSoundPreset = 'default';
+let currentSoundPreset = 'clave';
 
 // Tap tempo state
 const tapTimes = [];
@@ -502,7 +502,7 @@ settingsReset.addEventListener('click', () => {
   metronome.resetSoundSettings();
   metronome.resetVolumes();
   applyTheme('default');
-  currentSoundPreset = 'default';
+  currentSoundPreset = 'clave';
   // Reset volume sliders in UI
   for (const type of ['beat', 'eighth', 'sixteenth', 'triplet']) {
     const defaultVolume = Metronome.DEFAULT_VOLUMES[type];

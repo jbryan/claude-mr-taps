@@ -540,7 +540,7 @@ describe('Metronome', () => {
 
   describe('soundPresets', () => {
     test('SOUND_PRESETS contains expected presets', () => {
-      expect(Metronome.SOUND_PRESETS).toHaveProperty('default');
+      expect(Metronome.SOUND_PRESETS).toHaveProperty('lowbeep');
       expect(Metronome.SOUND_PRESETS).toHaveProperty('click');
       expect(Metronome.SOUND_PRESETS).toHaveProperty('clave');
       expect(Metronome.SOUND_PRESETS).toHaveProperty('beep');

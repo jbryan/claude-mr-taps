@@ -2,6 +2,12 @@
 
 All notable changes to Mr. Taps will be documented in this file.
 
+## [2026.02.22-1] - 2026-02-22
+
+### Changed
+- Clave is now the default sound preset
+- Renamed "Default" sound preset to "Low Beep"
+
 ## [2026.02.17-3] - 2026-02-17
 
 ### Fixed

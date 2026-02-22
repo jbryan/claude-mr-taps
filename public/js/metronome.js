@@ -19,8 +19,8 @@ export class Metronome {
     subdivision: { pitch: 660, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 0.3, noise: 0 },
   };
   static SOUND_PRESETS = {
-    default: {
-      name: 'Default',
+    lowbeep: {
+      name: 'Low Beep',
       settings: {
         accent: { pitch: 880, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 1.0, noise: 0 },
         regular: { pitch: 440, attack: 0.005, decay: 0.04, sustain: 0.5, release: 0.04, waveform: 'sine', gain: 0.7, noise: 0 },

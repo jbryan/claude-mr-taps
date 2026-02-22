@@ -71,9 +71,9 @@ function setupDOM() {
         <option value="light">Light</option>
       </select>
       <select id="sound-preset">
-        <option value="default">Default</option>
+        <option value="clave" selected>Clave</option>
+        <option value="lowbeep">Low Beep</option>
         <option value="click">Click</option>
-        <option value="clave">Clave</option>
         <option value="beep">Beep</option>
         <option value="hihat">Hi-Hat</option>
         <option value="custom">Custom</option>
@@ -945,7 +945,7 @@ describe('App', () => {
       // Reset
       settingsReset.click();
 
-      expect(soundPreset.value).toBe('default');
+      expect(soundPreset.value).toBe('clave');
     });
 
     test('sound preset is saved to localStorage', async () => {
